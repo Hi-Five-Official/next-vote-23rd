@@ -41,6 +41,11 @@
   /* Point */
   --color-point-1: #ff4f4f;
 
+  /* Main */
+  --color-main-main: #874fff;
+  --color-main-bright: #dcccff;
+  --color-main-dark: #4314a8;
+
   /* Gradient */
   --background-image-purple-fade: linear-gradient(
     180deg,
