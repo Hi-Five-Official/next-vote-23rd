@@ -134,4 +134,10 @@
   --text-caption2-m--font-weight: 500;
   --text-caption2-m--line-height: 140%;
   --text-caption2-m--letter-spacing: -0.02em;
+
+  /****** Radius ******/
+  --radius-12: 12px;
+  --radius-20: 20px;
+  --radius-24: 24px;
+  --radius-50: 50px;
 }
