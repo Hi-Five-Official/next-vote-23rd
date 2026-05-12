@@ -1,3 +1,5 @@
+import CTA from "@/app/components/common/CTA";
+
 const page = () => {
   return (
     <div>
@@ -5,6 +7,7 @@ const page = () => {
         🏆<span className="text-purple-60">2026</span> CEOS <br />
         23RD AWARDS
       </h1>
+      <CTA label="투표하러 가기" />
     </div>
   );
 };
