@@ -33,7 +33,7 @@ const Modal = (props: ModalProps) => {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      className="z-modal fixed inset-0 flex items-center justify-center bg-black/60"
       onClick={props.onClose}
     >
       <div

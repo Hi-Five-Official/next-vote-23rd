@@ -7,6 +7,7 @@ import DitdaIcon from "@/app/assets/icons/icon_ditda_regular.svg";
 import HamburgerIcon from "@/app/assets/icons/icon_hamburger_regular.svg";
 import XIcon from "@/app/assets/icons/icon_x_regular.svg";
 import { NAV_ITEMS } from "@/app/constants/navigation";
+import { cn } from "@/app/lib/utils/cn";
 
 const Header = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -21,7 +22,7 @@ const Header = () => {
 
   return (
     <>
-      <header className="bg-gray-10 relative z-10 flex h-16 shrink-0 items-center justify-between px-6">
+      <header className="bg-gray-10 z-header relative flex h-16 shrink-0 items-center justify-between px-6">
         <Link href="/">
           <DitdaIcon className="h-8.5 w-17" />
         </Link>
@@ -42,11 +43,17 @@ const Header = () => {
         />
       </header>
       <div
-        className={`fixed inset-0 z-20 transition-opacity duration-300 md:hidden ${sidebarOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"}`}
+        className={cn(
+          "z-sidebar fixed inset-0 transition-opacity duration-300 md:hidden",
+          sidebarOpen ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0",
+        )}
         onClick={() => setSidebarOpen(false)}
       />
       <div
-        className={`bg-gray-20 fixed top-0 right-0 z-30 flex h-full w-64 flex-col px-6 py-5 shadow-xl transition-transform duration-300 ease-in-out md:hidden ${sidebarOpen ? "translate-x-0" : "translate-x-full"}`}
+        className={cn(
+          "bg-gray-20 z-sidebar fixed top-0 right-0 flex h-full w-64 flex-col px-6 py-5 shadow-xl transition-transform duration-300 ease-in-out md:hidden",
+          sidebarOpen ? "translate-x-0" : "translate-x-full",
+        )}
       >
         <div className="flex justify-end">
           <button

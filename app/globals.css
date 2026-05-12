@@ -143,4 +143,10 @@
   --radius-20: 20px;
   --radius-24: 24px;
   --radius-50: 50px;
+
+  /****** Z-index ******/
+  --z-index-layout: 0;
+  --z-index-header: 10;
+  --z-index-sidebar: 20;
+  --z-index-modal: 50;
 }

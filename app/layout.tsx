@@ -22,7 +22,7 @@ export default function RootLayout({
           <div className="bg-purple-fade pointer-events-none absolute top-0 right-0 left-0 h-22.5" />
           {children}
         </main>
-        <div className="bg-purple-fade fixed right-0 bottom-0 left-0 z-0 h-22.5 rotate-180" />
+        <div className="bg-purple-fade z-layout fixed right-0 bottom-0 left-0 h-22.5 rotate-180" />
       </body>
     </html>
   );
