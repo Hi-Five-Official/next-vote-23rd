@@ -1,11 +1,26 @@
+import HomeCircle from "@/app/assets/home/home_circle.svg";
+import HomeDiamond from "@/app/assets/home/home_diamond.svg";
+import HomeFlower from "@/app/assets/home/home_flower.svg";
 import Chip from "@/app/components/common/Chip";
 import CTA from "@/app/components/common/CTA";
 
 const page = () => {
   return (
     <div>
+      <HomeFlower
+        aria-hidden="true"
+        className="pointer-events-none absolute md:-top-10 md:-left-95 md:h-225 md:w-205"
+      />
+      <HomeDiamond
+        aria-hidden="true"
+        className="pointer-events-none absolute md:-top-25 md:-right-50 md:h-155 md:w-180"
+      />
+      <HomeCircle
+        aria-hidden="true"
+        className="pointer-events-none absolute md:-bottom-55 md:left-3/5 md:h-122 md:w-122 md:-translate-x-1/2"
+      />
       <div className="flex flex-col items-center gap-6">
-        <h1 className="text-heading1-sb text-black md:text-[40px] md:leading-[135%] md:font-semibold md:tracking-[-0.8px]">
+        <h1 className="text-[40px] font-semibold text-black md:text-[50px] md:leading-[135%] md:font-semibold md:tracking-[-0.8px]">
           🏆<span className="text-purple-60">2026</span> CEOS
           <br />
           23RD AWARDS
