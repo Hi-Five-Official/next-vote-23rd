@@ -1,8 +1,13 @@
+"use client";
+
+import { useEffect } from "react";
+
 interface BaseModalProps {
   title: string;
   description?: string;
   rightLabel?: string;
   onConfirm: () => void;
+  onClose?: () => void;
 }
 
 interface SingleButtonModalProps extends BaseModalProps {
@@ -18,9 +23,23 @@ interface DoubleButtonModalProps extends BaseModalProps {
 type ModalProps = SingleButtonModalProps | DoubleButtonModalProps;
 
 const Modal = (props: ModalProps) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") props.onClose?.();
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [props]);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
-      <div className="w-80 overflow-hidden rounded-2xl bg-white shadow-lg md:w-100">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60"
+      onClick={props.onClose}
+    >
+      <div
+        className="w-80 overflow-hidden rounded-2xl bg-white shadow-lg md:w-100"
+        onClick={e => e.stopPropagation()}
+      >
         <div className="flex flex-col items-center gap-2 px-6 py-12 text-center md:gap-3">
           <p className="text-heading2-sb text-black">{props.title}</p>
           {props.description && (

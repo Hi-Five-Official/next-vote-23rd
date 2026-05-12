@@ -25,6 +25,7 @@ const Page = () => {
           description="분야별 1회만 가능하며, 제출 후에는 수정이 어렵습니다."
           leftLabel="아니오"
           rightLabel="예"
+          onClose={() => setConfirmOpen(false)}
           onCancel={() => setConfirmOpen(false)}
           onConfirm={() => setConfirmOpen(false)}
         />
@@ -35,6 +36,7 @@ const Page = () => {
           title="회원가입이 완료되었습니다."
           description="CEOS 투표에 참여해보세요!"
           rightLabel="확인"
+          onClose={() => setAlertOpen(false)}
           onConfirm={() => setAlertOpen(false)}
         />
       )}
