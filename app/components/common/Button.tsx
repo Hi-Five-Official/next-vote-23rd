@@ -1,8 +1,8 @@
-type ButtonProps = {
+interface ButtonProps {
   children: React.ReactNode;
   isSelected?: boolean;
   onClick?: () => void;
-};
+}
 
 function Button({ children, isSelected = false, onClick }: ButtonProps) {
   return (
