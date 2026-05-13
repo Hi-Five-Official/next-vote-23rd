@@ -15,9 +15,18 @@ type DropDownProps = {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  disabled?: boolean;
+  onDisabledClick?: () => void;
 };
 
-const DropDown = ({ options, value, onChange, placeholder = "선택" }: DropDownProps) => {
+const DropDown = ({
+  options,
+  value,
+  onChange,
+  placeholder = "선택",
+  disabled = false,
+  onDisabledClick,
+}: DropDownProps) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -37,7 +46,13 @@ const DropDown = ({ options, value, onChange, placeholder = "선택" }: DropDown
     <div ref={ref} className="relative w-fit">
       <button
         type="button"
-        onClick={() => setOpen(prev => !prev)}
+        onClick={() => {
+          if (disabled) {
+            onDisabledClick?.();
+          } else {
+            setOpen(prev => !prev);
+          }
+        }}
         className="rounded-50 text-body2-m md:text-heading3-m flex min-w-35 cursor-pointer items-center justify-between gap-3 border border-purple-50 px-5 py-2.5 text-purple-50 transition-colors md:px-6"
       >
         <span>{selected ? selected.label : placeholder}</span>
