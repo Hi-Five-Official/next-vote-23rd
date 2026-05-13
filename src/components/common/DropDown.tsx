@@ -43,7 +43,7 @@ const DropDown = ({
   }, []);
 
   return (
-    <div ref={ref} className="relative w-fit">
+    <div ref={ref} className="relative w-full">
       <button
         type="button"
         onClick={() => {
@@ -53,7 +53,7 @@ const DropDown = ({
             setOpen(prev => !prev);
           }
         }}
-        className="rounded-50 text-body2-m md:text-heading3-m flex min-w-35 cursor-pointer items-center justify-between gap-3 border border-purple-50 px-5 py-2.5 text-purple-50 transition-colors md:px-6"
+        className="rounded-50 text-body2-m md:text-heading3-m flex w-full cursor-pointer items-center justify-between gap-3 border border-purple-50 px-5 py-2.5 text-purple-50 transition-colors md:px-6"
       >
         <span>{selected ? selected.label : placeholder}</span>
         <ChevronDownIcon

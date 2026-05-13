@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
+import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
 import DropDown from "@/components/common/DropDown";
 import InputField from "@/components/common/InputField";
@@ -56,12 +57,12 @@ const Page = () => {
         />
       )}
       <h1 className="text-body1-sb md:text-heading1-sb text-purple-60 pb-8">SIGNUP</h1>
-      <div className="flex flex-col gap-3 pb-6">
+      <div className="flex flex-col gap-3 pb-3">
         <h3 className="md:text-body2-m text-caption2-m text-black">파트 *</h3>
         <TabToggle tabs={TABS} value={activeTab} onChange={handleTabChange} />
       </div>
-      <div className="flex flex-row gap-3 md:justify-between">
-        <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-3 md:flex-row">
+        <div className="flex flex-1 flex-col gap-3">
           <h3 className="md:text-body2-m text-caption2-m text-black">팀명 *</h3>
           <DropDown
             options={TEAM_OPTIONS}
@@ -70,7 +71,7 @@ const Page = () => {
             placeholder="팀명"
           />
         </div>
-        <div className="relative flex flex-col gap-3">
+        <div className="relative flex flex-1 flex-col gap-3">
           <h3 className="md:text-body2-m text-caption2-m text-black">이름 *</h3>
           <DropDown
             options={nameOptions}
@@ -80,23 +81,34 @@ const Page = () => {
             disabled={!team}
           />
           {!team && (
-            <p className="text-caption2-m absolute top-full mt-1.5 w-full text-center text-gray-50">
+            <p className="text-caption2-m text-gray-70 absolute top-full mt-1.5 w-full text-center">
               팀명을 먼저 선택해주세요
             </p>
           )}
         </div>
       </div>
       <div className="flex flex-col gap-10 pt-10 pb-12">
-        {FIELDS.map(({ key, label, placeholder }) => (
-          <div key={key} className="flex flex-row items-center justify-between">
-            <h3 className="md:text-body2-m text-caption2-m w-30 text-black">{label}</h3>
-            <InputField
-              placeholder={placeholder}
-              value={fields[key as keyof typeof fields]}
-              onChange={e => setFields(prev => ({ ...prev, [key]: e.target.value }))}
-            />
-          </div>
-        ))}
+        {FIELDS.map(({ key, label, placeholder }) => {
+          const hasCheckButton = key === "id" || key === "email";
+          return (
+            <div key={key} className="flex flex-row items-center justify-between">
+              <h3 className="md:text-body2-m text-caption2-m w-20 text-black">{label}</h3>
+              <div className="relative flex-1">
+                <InputField
+                  placeholder={placeholder}
+                  value={fields[key as keyof typeof fields]}
+                  onChange={e => setFields(prev => ({ ...prev, [key]: e.target.value }))}
+                  className={hasCheckButton ? "pr-24" : undefined}
+                />
+                {hasCheckButton && (
+                  <div className="absolute top-[45%] right-0 -translate-y-1/2">
+                    <Button variant="check">중복 확인</Button>
+                  </div>
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
       <CTA label="가입하기" disabled={!isFormValid} onClick={() => setIsModalOpen(true)} />
     </div>
