@@ -7,7 +7,7 @@ import Chip from "@/components/common/Chip";
 import CTA from "@/components/common/CTA";
 import Modal from "@/components/common/Modal";
 import BackgroundGraphic from "@/components/home/BackgroundGraphic";
-import { VOTE_CATEGORIES } from "@/constants/vote";
+import { VOTE_CATEGORIES } from "@/constants/home";
 
 const Page = () => {
   const [modalOpen, setModalOpen] = useState(false);
