@@ -23,3 +23,11 @@ export const backendMembers = [
   { name: "최우혁", university: "Hongik Univ." },
   { name: "황신애", university: "Hongik Univ." },
 ];
+
+export const idea = [
+  { name: "Ditda" },
+  { name: "Jobdri" },
+  { name: "Groupeat" },
+  { name: "CONX" },
+  { name: "IPX" },
+];
