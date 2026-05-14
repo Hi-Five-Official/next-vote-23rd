@@ -47,7 +47,7 @@ const RankingContent = () => {
     }));
 
   return (
-    <div className="min-h-screen bg-white px-2 pt-21">
+    <div className="flex min-h-screen items-center justify-center bg-white px-2">
       <div className="flex w-full flex-col">
         <h1 className="text-body1-sb md:text-heading1-sb mb-2 text-purple-50 md:mb-3">
           {rankingConfig.title}
@@ -55,7 +55,7 @@ const RankingContent = () => {
 
         <div className="grid w-full grid-cols-1 gap-x-10 gap-y-6 md:grid-cols-3 md:gap-x-8">
           {updatedRankings.map(item => (
-            <div key={item.label} className="flex min-w-max items-center gap-5">
+            <div key={item.label} className="flex min-w-max items-center gap-3">
               <span className="text-body1-sb md:text-heading1-sb w-8 text-right text-purple-50">
                 {item.rank}
               </span>

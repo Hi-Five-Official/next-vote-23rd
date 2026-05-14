@@ -51,7 +51,7 @@ const page = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white px-2 pt-21">
+    <div className="flex min-h-screen items-center justify-center bg-white px-2">
       <div className="flex w-full flex-col">
         <h1 className="text-body1-sb md:text-heading1-sb mb-2 text-purple-50 md:mb-3">
           {voteConfig.title}
