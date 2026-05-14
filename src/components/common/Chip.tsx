@@ -17,7 +17,7 @@ const Chip = ({ label, voteCount, isSelected = false }: ChipProps) => {
       )}
     >
       <span>{label}</span>
-      <span>{voteCount}</span>
+      {voteCount !== undefined && <span className="ml-2">{voteCount}</span>}
     </div>
   );
 };

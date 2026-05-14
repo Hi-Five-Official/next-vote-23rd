@@ -1,34 +1,26 @@
 "use client";
-import { frontendMembers, backendMembers } from "@/data/members";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+
 import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
 import Modal from "@/components/common/Modal";
+import { LEADER_CONFIGS, type LeaderPart, STORAGE_KEY } from "@/constants/vote";
 
-const leaderVoteConfigs = {
-  frontend: {
-    title: "23RD FRONT-END",
-    members: frontendMembers,
-  },
-  backend: {
-    title: "23RD BACK-END",
-    members: backendMembers,
-  },
-} as const;
-
-type LeaderPart = keyof typeof leaderVoteConfigs;
-
-const page = () => {
+const Page = () => {
   const router = useRouter();
   const params = useParams();
 
   const part = params.part as LeaderPart;
-  const voteConfig = leaderVoteConfigs[part];
+  const voteConfig = LEADER_CONFIGS[part];
 
-  const [selectedMember, setSelectedMember] = useState<string>("");
+  const [selectedMember, setSelectedMember] = useState<string>(
+    () => sessionStorage.getItem(STORAGE_KEY.LEADER(part)) ?? "",
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hasVoted, setHasVoted] = useState(false);
+  const [hasVoted, setHasVoted] = useState(
+    () => !!sessionStorage.getItem(STORAGE_KEY.LEADER(part)),
+  );
 
   const isVoteEnabled = selectedMember !== "";
 
@@ -42,7 +34,7 @@ const page = () => {
   };
 
   const handleConfirmVote = () => {
-    sessionStorage.setItem(`selected-leader-${part}`, selectedMember);
+    sessionStorage.setItem(STORAGE_KEY.LEADER(part), selectedMember);
     //세션스토리지에 저장 및 API 연동 시 수정
     setHasVoted(true);
     setIsModalOpen(false);
@@ -53,12 +45,11 @@ const page = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-2">
+    <div>
       <div className="flex w-full flex-col">
-        <h1 className="text-body1-sb md:text-heading1-sb mb-2 text-purple-50 md:mb-3">
+        <h1 className="text-body1-sb md:text-heading1-sb text-purple-60 mb-5 md:mb-10">
           {voteConfig.title}
         </h1>
-
         <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-2 md:mt-3 md:gap-x-3 md:gap-y-3">
           {voteConfig.members.map(member => (
             <Button
@@ -73,21 +64,18 @@ const page = () => {
             </Button>
           ))}
         </div>
-
         {!hasVoted && (
           <div className="mt-10 md:mt-14">
             <CTA label="투표하기" disabled={!isVoteEnabled} onClick={handleVoteClick} />
           </div>
         )}
-
         <button
           type="button"
           onClick={handleRankingClick}
-          className="text-caption2-m md:text-body2-m mt-3 cursor-pointer text-black"
+          className="text-caption2-m md:text-body2-m text-gray-80 hover:text-gray-70 mt-6 cursor-pointer"
         >
-          현재 투표 순위 보러 가기
+          현재 투표 순위 보러 가기 →
         </button>
-
         {isModalOpen && (
           <Modal
             buttons="double"
@@ -105,4 +93,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

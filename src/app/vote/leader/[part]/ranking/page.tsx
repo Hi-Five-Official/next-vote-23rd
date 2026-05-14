@@ -1,38 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useState } from "react";
+
 import Chip from "@/components/common/Chip";
-import { backendVoteRankings, frontendVoteRankings } from "@/data/members";
+import { LEADER_CONFIGS, type LeaderPart, STORAGE_KEY } from "@/constants/vote";
 
-const rankingConfigs = {
-  frontend: {
-    title: "현재 프론트엔드 파트장 투표 순위",
-    rankings: frontendVoteRankings,
-  },
-  backend: {
-    title: "현재 백엔드 파트장 투표 순위",
-    rankings: backendVoteRankings,
-  },
-} as const;
-
-type LeaderPart = keyof typeof rankingConfigs;
-
-const page = () => {
+const Page = () => {
   const params = useParams();
 
   const part = params.part as LeaderPart;
-  const rankingConfig = rankingConfigs[part];
+  const rankingConfig = LEADER_CONFIGS[part];
 
-  const [selectedMember, setSelectedMember] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!part) return;
-
-    const savedSelectedMember = sessionStorage.getItem(`selected-leader-${part}`);
-
-    setSelectedMember(savedSelectedMember);
-  }, [part]);
+  const [selectedMember] = useState<string | null>(() =>
+    sessionStorage.getItem(STORAGE_KEY.LEADER(part)),
+  );
 
   const updatedRankings = rankingConfig.rankings
     .map(item => ({
@@ -46,26 +28,22 @@ const page = () => {
     }));
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-2">
+    <div>
       <div className="flex w-full flex-col">
-        <h1 className="text-body1-sb md:text-heading1-sb mb-2 text-purple-50 md:mb-3">
-          {rankingConfig.title}
+        <h1 className="text-body1-sb md:text-heading1-sb text-purple-60 mb-6 md:mb-10">
+          {rankingConfig.rankingTitle}
         </h1>
-
-        <div className="grid w-full grid-cols-1 gap-x-10 gap-y-3 md:grid-cols-3 md:gap-x-8 md:gap-y-6">
+        <div className="grid w-full grid-cols-1 gap-y-4 md:grid-cols-2 md:justify-items-center md:gap-y-4">
           {updatedRankings.map(item => (
-            <div key={item.label} className="flex min-w-max items-center gap-1">
-              <span className="text-body1-sb md:text-heading1-sb w-8 text-right text-purple-50">
+            <div key={item.label} className="flex items-center gap-4">
+              <span className="text-body1-sb md:text-heading1-sb w-6 shrink-0 text-right text-purple-50">
                 {item.rank}
               </span>
-
-              <div className="[&_span:first-child]:mr-2">
-                <Chip
-                  label={item.label}
-                  voteCount={item.voteCount}
-                  isSelected={selectedMember === item.label}
-                />
-              </div>
+              <Chip
+                label={item.label}
+                voteCount={item.voteCount}
+                isSelected={selectedMember === item.label}
+              />
             </div>
           ))}
         </div>
@@ -74,4 +52,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

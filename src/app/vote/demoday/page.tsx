@@ -1,18 +1,29 @@
 "use client";
-import { idea } from "@/data/members";
-import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useState, useSyncExternalStore } from "react";
+
 import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
 import Modal from "@/components/common/Modal";
+import { STORAGE_KEY } from "@/constants/vote";
+import { idea } from "@/data/members";
 
-const page = () => {
+const Page = () => {
   const router = useRouter();
-  const [selectedMember, setSelectedMember] = useState<string>("");
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hasVoted, setHasVoted] = useState(false);
 
-  const isVoteEnabled = selectedMember !== "";
+  const storedMember = useSyncExternalStore(
+    () => () => {},
+    () => sessionStorage.getItem(STORAGE_KEY.DEMODAY) ?? "",
+    () => "",
+  );
+
+  const [selectedMember, setSelectedMember] = useState<string>("");
+  const [votedInSession, setVotedInSession] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const hasVoted = votedInSession || !!storedMember;
+  const displayMember = storedMember || selectedMember;
+  const isVoteEnabled = selectedMember !== "" && !hasVoted;
 
   const handleVoteClick = () => {
     if (!selectedMember) return;
@@ -24,22 +35,26 @@ const page = () => {
   };
 
   const handleConfirmVote = () => {
-    setHasVoted(true);
+    sessionStorage.setItem(STORAGE_KEY.DEMODAY, selectedMember);
+    setVotedInSession(true);
     setIsModalOpen(false);
   };
 
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-2">
-      <div className="flex w-full flex-col">
-        <h1 className="text-body1-sb md:text-heading1-sb mb-2 text-purple-50 md:mb-3">
-          23TH CEOS PROJECT
-        </h1>
+  const handleRankingClick = () => {
+    router.push("/vote/demoday/ranking");
+  };
 
+  return (
+    <div>
+      <div className="flex w-full flex-col">
+        <h1 className="text-body1-sb md:text-heading1-sb text-purple-60 mb-5 md:mb-10">
+          23RD CEOS PROJECT
+        </h1>
         <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-2 md:mt-3 md:gap-x-3 md:gap-y-3">
           {idea.map(member => (
             <Button
               key={member.name}
-              isSelected={selectedMember === member.name}
+              isSelected={displayMember === member.name}
               onClick={() => {
                 if (hasVoted) return;
                 setSelectedMember(member.name);
@@ -49,7 +64,6 @@ const page = () => {
             </Button>
           ))}
         </div>
-
         {!hasVoted && (
           <div className="mt-10 md:mt-14">
             <CTA label="투표하기" disabled={!isVoteEnabled} onClick={handleVoteClick} />
@@ -57,19 +71,16 @@ const page = () => {
         )}
         <button
           type="button"
-          onClick={() =>
-            router.push(`/vote/demoday/ranking?selected=${encodeURIComponent(selectedMember)}`)
-          }
-          className="text-caption2-m md:text-body2-m mt-3 cursor-pointer"
+          onClick={handleRankingClick}
+          className="text-caption2-m md:text-body2-m text-gray-80 hover:text-gray-70 mt-6 cursor-pointer"
         >
-          현재 투표 순위 보러 가기
+          현재 투표 순위 보러 가기 →
         </button>
       </div>
-
       {isModalOpen && (
         <Modal
           buttons="double"
-          title={`투표는 분야별 1회만 가능하며, 제출 후에는 수정이 어렵습니다.`}
+          title={`투표는 분야별 1회만 가능하며,\n제출 후에는 수정이 어렵습니다.`}
           description="투표하시겠습니까?"
           leftLabel="아니오"
           rightLabel="예"
@@ -82,4 +93,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

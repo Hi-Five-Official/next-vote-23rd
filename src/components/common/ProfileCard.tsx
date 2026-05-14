@@ -12,8 +12,8 @@ const ProfileCard = ({ name, university }: ProfileProps) => {
         <ProfileIcon className="size-12 text-purple-50" />
       </div>
       <div className="flex flex-col items-start gap-1">
-        <div className="text-caption1-sb md:text-body1-sb text-black">{name}</div>
-        <div className="text-caption2-sb text-purple-60 md:text-body2-sb">{university}</div>
+        <p className="text-caption1-sb md:text-body1-sb text-black">{name}</p>
+        <p className="text-caption2-sb text-purple-60 md:text-body2-sb">{university}</p>
       </div>
     </div>
   );
