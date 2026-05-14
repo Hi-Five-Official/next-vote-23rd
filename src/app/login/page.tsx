@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
+import { setAuthCookie } from "@/app/actions/auth";
 import CTA from "@/components/common/CTA";
 import { dispatchAuthChange } from "@/components/common/Header";
 import InputField from "@/components/common/InputField";
@@ -44,6 +45,7 @@ const Page = () => {
         return;
       }
       localStorage.setItem("accessToken", res.result.accessToken);
+      await setAuthCookie(res.result.accessToken);
       dispatchAuthChange();
       setIsModalOpen(true);
     } catch {

@@ -10,8 +10,8 @@ import BackgroundGraphic from "@/components/home/BackgroundGraphic";
 import { VOTE_CATEGORIES } from "@/constants/home";
 
 const Page = () => {
-  const [modalOpen, setModalOpen] = useState(false);
   const router = useRouter();
+  const [modalOpen, setModalOpen] = useState(false);
 
   return (
     <div>
