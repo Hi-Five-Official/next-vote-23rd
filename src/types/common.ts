@@ -1,6 +1,8 @@
+import type { ErrorCode } from "@/types/errorCode";
+
 export type ApiResponse<T = null> = {
   success: boolean;
-  code: string;
+  code: ErrorCode;
   message: string;
   result?: T | null;
   error?: Record<string, unknown> | null;

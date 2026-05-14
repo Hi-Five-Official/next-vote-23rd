@@ -1,6 +1,7 @@
 import ky from "ky";
 
 import type { RefreshTokenResponse } from "@/types/auth";
+import { ERROR_CODE } from "@/types/errorCode";
 
 let accessToken: string | null = null;
 
@@ -45,7 +46,7 @@ const api = ky.create({
         if (response.status !== 401 || retryCount > 0) return;
 
         const body = (await response.clone().json()) as { code?: string };
-        if (body.code !== "AUTH_401_04") return;
+        if (body.code !== ERROR_CODE.AUTH_401_04) return;
 
         try {
           const newToken = await postRefreshToken();
