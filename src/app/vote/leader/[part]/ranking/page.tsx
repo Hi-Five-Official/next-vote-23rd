@@ -30,22 +30,20 @@ const Page = () => {
   return (
     <div>
       <div className="flex w-full flex-col">
-        <h1 className="text-body1-sb md:text-heading1-sb mb-5 text-purple-50 md:mb-10">
+        <h1 className="text-body1-sb md:text-heading1-sb mb-6 text-purple-50 md:mb-10">
           {rankingConfig.rankingTitle}
         </h1>
-        <div className="grid w-full grid-cols-1 gap-x-10 gap-y-3 md:grid-cols-3 md:gap-x-8 md:gap-y-6">
+        <div className="grid w-full grid-cols-1 gap-y-4 md:grid-cols-2 md:justify-items-center md:gap-y-4">
           {updatedRankings.map(item => (
-            <div key={item.label} className="flex min-w-max items-center gap-1">
-              <span className="text-body1-sb md:text-heading1-sb w-8 text-right text-purple-50">
+            <div key={item.label} className="flex items-center gap-4">
+              <span className="text-body1-sb md:text-heading1-sb w-6 shrink-0 text-right text-purple-50">
                 {item.rank}
               </span>
-              <div className="[&_span:first-child]:mr-2">
-                <Chip
-                  label={item.label}
-                  voteCount={item.voteCount}
-                  isSelected={selectedMember === item.label}
-                />
-              </div>
+              <Chip
+                label={item.label}
+                voteCount={item.voteCount}
+                isSelected={selectedMember === item.label}
+              />
             </div>
           ))}
         </div>

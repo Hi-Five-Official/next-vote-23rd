@@ -22,7 +22,9 @@ const Page = () => {
       </div>
       <div className="mt-5 md:mt-10">
         <div className="text-caption1-sb md:text-body1-sb mb-3 md:mb-6">데모데이 투표</div>
-        <Button onClick={() => router.push("/vote/demoday")}>데모데이</Button>
+        <div className="grid grid-cols-1 gap-3">
+          <Button onClick={() => router.push("/vote/demoday")}>데모데이</Button>
+        </div>
       </div>
     </div>
   );
