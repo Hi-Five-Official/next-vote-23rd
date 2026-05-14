@@ -20,9 +20,9 @@ const page = () => {
   const members = selectedTab === "frontend" ? frontendMembers : backendMembers;
 
   return (
-    <div className="min-h-screen bg-white px-2 pt-21">
+    <div>
       <div className="flex w-full flex-col">
-        <h1 className="text-body1-sb md:text-heading1-sb mb-2 text-purple-50 md:mb-3">Members</h1>
+        <h1 className="text-body1-sb md:text-heading1-sb mb-2 text-purple-50 md:mb-3">MEMBERS</h1>
 
         <TabToggle tabs={tabs} value={selectedTab} onChange={setSelectedTab} />
 

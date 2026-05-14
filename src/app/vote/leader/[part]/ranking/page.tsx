@@ -46,7 +46,7 @@ const page = () => {
     }));
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white px-2">
+    <div>
       <div className="flex w-full flex-col">
         <h1 className="text-body1-sb md:text-heading1-sb mb-5 text-purple-50 md:mb-10">
           {rankingConfig.title}
