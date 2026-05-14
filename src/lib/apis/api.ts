@@ -35,7 +35,7 @@ const api = ky.create({
   hooks: {
     beforeRequest: [
       ({ request }) => {
-        const token = getAccessToken();
+        const token = getAccessToken() ?? localStorage.getItem("accessToken");
         if (token) {
           request.headers.set("Authorization", `Bearer ${token}`);
         }

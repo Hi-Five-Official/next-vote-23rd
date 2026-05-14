@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import CTA from "@/components/common/CTA";
+import { dispatchAuthChange } from "@/components/common/Header";
 import InputField from "@/components/common/InputField";
 import Modal from "@/components/common/Modal";
 import { LoginFormValues, loginSchema } from "@/constants/loginSchema";
@@ -43,6 +44,7 @@ const Page = () => {
         return;
       }
       localStorage.setItem("accessToken", res.result.accessToken);
+      dispatchAuthChange();
       setIsModalOpen(true);
     } catch {
       setLoginError("아이디 또는 비밀번호를 확인해주세요.");

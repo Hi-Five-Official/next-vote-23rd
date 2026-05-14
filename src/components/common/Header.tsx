@@ -2,17 +2,37 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 
 import DitdaIcon from "@/assets/icons/icon_ditda_regular.svg";
 import HamburgerIcon from "@/assets/icons/icon_hamburger_regular.svg";
 import XIcon from "@/assets/icons/icon_x_regular.svg";
 import { NAV_ITEMS } from "@/constants/navigation";
+import { postLogout } from "@/lib/apis/auth";
 import { cn } from "@/lib/utils/cn";
+
+const AUTH_CHANGE_EVENT = "auth-change";
+
+const subscribeAuth = (callback: () => void) => {
+  window.addEventListener("storage", callback);
+  window.addEventListener(AUTH_CHANGE_EVENT, callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(AUTH_CHANGE_EVENT, callback);
+  };
+};
+
+const getAuthSnapshot = () => !!localStorage.getItem("accessToken");
+const getAuthServerSnapshot = () => false;
+
+export const dispatchAuthChange = () => {
+  window.dispatchEvent(new Event(AUTH_CHANGE_EVENT));
+};
 
 const Header = () => {
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const isLoggedIn = useSyncExternalStore(subscribeAuth, getAuthSnapshot, getAuthServerSnapshot);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -21,6 +41,16 @@ const Header = () => {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      await postLogout();
+    } finally {
+      localStorage.removeItem("accessToken");
+      dispatchAuthChange();
+      alert("로그아웃 되었습니다!");
+    }
+  };
 
   return (
     <>
@@ -38,6 +68,22 @@ const Header = () => {
               {label}
             </Link>
           ))}
+          {isLoggedIn ? (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="text-heading1-sb hover:text-purple-60 cursor-pointer text-black transition-colors"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className={`text-heading1-sb hover:text-purple-60 transition-colors ${pathname === "/login" ? "text-purple-60" : "text-black"}`}
+            >
+              Login
+            </Link>
+          )}
         </nav>
         <button type="button" onClick={() => setSidebarOpen(true)} className="md:hidden">
           <HamburgerIcon
@@ -83,6 +129,29 @@ const Header = () => {
               {label}
             </Link>
           ))}
+          {isLoggedIn ? (
+            <button
+              type="button"
+              onClick={() => {
+                handleLogout();
+                setSidebarOpen(false);
+              }}
+              className="text-heading1-sb hover:text-purple-60 cursor-pointer text-black transition-colors"
+            >
+              Logout
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              onClick={() => setSidebarOpen(false)}
+              className={cn(
+                "text-heading1-sb hover:text-purple-60 cursor-pointer transition-colors",
+                pathname === "/login" ? "text-purple-60" : "text-black",
+              )}
+            >
+              Login
+            </Link>
+          )}
         </nav>
       </div>
     </>
