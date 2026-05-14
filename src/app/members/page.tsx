@@ -1,7 +1,9 @@
 "use client";
+
+import { useState } from "react";
+
 import ProfileCard from "@/components/common/ProfileCard";
 import TabToggle from "@/components/common/TabToggle";
-import { useState } from "react";
 import { backendMembers, frontendMembers } from "@/data/members";
 
 const tabs = [
@@ -28,7 +30,7 @@ const Page = () => {
 
         <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 md:mt-3 md:gap-x-3 md:gap-y-2">
           {members.map(member => (
-            <ProfileCard name={member.name} university={member.university} />
+            <ProfileCard key={member.name} name={member.name} university={member.university} />
           ))}
         </div>
       </div>

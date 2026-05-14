@@ -1,25 +1,19 @@
 "use client";
-import { idea } from "@/data/members";
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
 import Modal from "@/components/common/Modal";
+import { idea } from "@/data/members";
 
 const Page = () => {
   const router = useRouter();
-  const [selectedMember, setSelectedMember] = useState<string>("");
+  const [selectedMember, setSelectedMember] = useState<string>(
+    () => sessionStorage.getItem("selected-demoday") ?? "",
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hasVoted, setHasVoted] = useState(false);
-
-  useEffect(() => {
-    const savedSelectedMember = sessionStorage.getItem("selected-demoday");
-
-    if (savedSelectedMember) {
-      setSelectedMember(savedSelectedMember);
-      setHasVoted(true);
-    }
-  }, []);
+  const [hasVoted, setHasVoted] = useState(() => !!sessionStorage.getItem("selected-demoday"));
 
   const isVoteEnabled = selectedMember !== "";
 

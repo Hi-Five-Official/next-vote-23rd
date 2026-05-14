@@ -1,6 +1,7 @@
 "use client";
-import Button from "@/components/common/Button";
 import { useRouter } from "next/navigation";
+
+import Button from "@/components/common/Button";
 
 const Page = () => {
   const router = useRouter();

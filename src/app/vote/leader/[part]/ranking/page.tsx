@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { useState } from "react";
+
 import Chip from "@/components/common/Chip";
 import { backendVoteRankings, frontendVoteRankings } from "@/data/members";
 
@@ -24,15 +25,9 @@ const Page = () => {
   const part = params.part as LeaderPart;
   const rankingConfig = rankingConfigs[part];
 
-  const [selectedMember, setSelectedMember] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (!part) return;
-
-    const savedSelectedMember = sessionStorage.getItem(`selected-leader-${part}`);
-
-    setSelectedMember(savedSelectedMember);
-  }, [part]);
+  const [selectedMember] = useState<string | null>(() =>
+    sessionStorage.getItem(`selected-leader-${part}`),
+  );
 
   const updatedRankings = rankingConfig.rankings
     .map(item => ({

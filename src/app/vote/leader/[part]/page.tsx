@@ -1,10 +1,11 @@
 "use client";
-import { frontendMembers, backendMembers } from "@/data/members";
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+
 import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
 import Modal from "@/components/common/Modal";
+import { backendMembers, frontendMembers } from "@/data/members";
 
 const leaderVoteConfigs = {
   frontend: {
@@ -26,20 +27,13 @@ const Page = () => {
   const part = params.part as LeaderPart;
   const voteConfig = leaderVoteConfigs[part];
 
-  const [selectedMember, setSelectedMember] = useState<string>("");
+  const [selectedMember, setSelectedMember] = useState<string>(
+    () => sessionStorage.getItem(`selected-leader-${part}`) ?? "",
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hasVoted, setHasVoted] = useState(false);
-
-  useEffect(() => {
-    if (!part) return;
-
-    const savedSelectedMember = sessionStorage.getItem(`selected-leader-${part}`);
-
-    if (savedSelectedMember) {
-      setSelectedMember(savedSelectedMember);
-      setHasVoted(true);
-    }
-  }, [part]);
+  const [hasVoted, setHasVoted] = useState(
+    () => !!sessionStorage.getItem(`selected-leader-${part}`),
+  );
 
   const isVoteEnabled = selectedMember !== "";
 

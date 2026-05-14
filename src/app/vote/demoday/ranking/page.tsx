@@ -1,16 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
+
 import Chip from "@/components/common/Chip";
 import { demoVoteRankings } from "@/data/members";
 
 const Page = () => {
-  const [selectedMember, setSelectedMember] = useState<string | null>(null);
-
-  useEffect(() => {
-    const savedSelectedMember = sessionStorage.getItem("selected-demoday");
-    setSelectedMember(savedSelectedMember);
-  }, []);
+  const [selectedMember] = useState<string | null>(() =>
+    sessionStorage.getItem("selected-demoday"),
+  );
 
   const updatedRankings = demoVoteRankings
     .map(item => ({
