@@ -32,7 +32,7 @@ const page = () => {
     <div className="flex min-h-screen items-center justify-center bg-white px-2">
       <div className="flex w-full flex-col">
         <h1 className="text-body1-sb md:text-heading1-sb mb-2 text-purple-50 md:mb-3">
-          23TH CEOS PROJECT
+          23RD CEOS PROJECT
         </h1>
 
         <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-2 md:mt-3 md:gap-x-3 md:gap-y-3">
