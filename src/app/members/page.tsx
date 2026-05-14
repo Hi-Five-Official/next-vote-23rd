@@ -15,7 +15,7 @@ const tabs = [
   },
 ];
 
-const page = () => {
+const Page = () => {
   const [selectedTab, setSelectedTab] = useState("frontend");
   const members = selectedTab === "frontend" ? frontendMembers : backendMembers;
 
@@ -36,4 +36,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

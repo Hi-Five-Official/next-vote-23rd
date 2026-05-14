@@ -6,7 +6,7 @@ import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
 import Modal from "@/components/common/Modal";
 
-const page = () => {
+const Page = () => {
   const router = useRouter();
   const [selectedMember, setSelectedMember] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -95,4 +95,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

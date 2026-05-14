@@ -19,7 +19,7 @@ const leaderVoteConfigs = {
 
 type LeaderPart = keyof typeof leaderVoteConfigs;
 
-const page = () => {
+const Page = () => {
   const router = useRouter();
   const params = useParams();
 
@@ -116,4 +116,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;

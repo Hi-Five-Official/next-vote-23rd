@@ -18,7 +18,7 @@ const rankingConfigs = {
 
 type LeaderPart = keyof typeof rankingConfigs;
 
-const page = () => {
+const Page = () => {
   const params = useParams();
 
   const part = params.part as LeaderPart;
@@ -74,4 +74,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default Page;
