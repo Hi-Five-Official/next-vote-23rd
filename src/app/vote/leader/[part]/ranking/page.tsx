@@ -30,7 +30,7 @@ const Page = () => {
   return (
     <div>
       <div className="flex w-full flex-col">
-        <h1 className="text-body1-sb md:text-heading1-sb mb-6 text-purple-50 md:mb-10">
+        <h1 className="text-body1-sb md:text-heading1-sb text-purple-60 mb-6 md:mb-10">
           {rankingConfig.rankingTitle}
         </h1>
         <div className="grid w-full grid-cols-1 gap-y-4 md:grid-cols-2 md:justify-items-center md:gap-y-4">

@@ -25,7 +25,7 @@ const Page = () => {
   return (
     <div>
       <div className="flex w-full flex-col">
-        <h1 className="text-body1-sb md:text-heading1-sb mb-6 text-purple-50 md:mb-10">
+        <h1 className="text-body1-sb md:text-heading1-sb text-purple-60 mb-6 md:mb-10">
           현재 데모데이 아이디어 투표 순위
         </h1>
         <div className="flex w-full flex-col gap-y-4">

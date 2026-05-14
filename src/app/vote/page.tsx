@@ -9,7 +9,7 @@ const Page = () => {
 
   return (
     <div>
-      <h1 className="text-body1-sb md:text-heading1-sb mb-5 text-purple-50 md:mb-10">VOTE</h1>
+      <h1 className="text-body1-sb md:text-heading1-sb text-purple-60 mb-5 md:mb-10">VOTE</h1>
       <div>
         <div className="text-caption1-sb md:text-body1-sb mb-3 md:mb-6">파트장 투표</div>
         <div className="grid grid-cols-1 gap-3">

@@ -47,7 +47,7 @@ const Page = () => {
   return (
     <div>
       <div className="flex w-full flex-col">
-        <h1 className="text-body1-sb md:text-heading1-sb mb-5 text-purple-50 md:mb-10">
+        <h1 className="text-body1-sb md:text-heading1-sb text-purple-60 mb-5 md:mb-10">
           23RD CEOS PROJECT
         </h1>
         <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-2 md:mt-3 md:gap-x-3 md:gap-y-3">
