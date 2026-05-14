@@ -1,6 +1,6 @@
 "use client";
 import { idea } from "@/data/members";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
@@ -11,6 +11,15 @@ const page = () => {
   const [selectedMember, setSelectedMember] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
+
+  useEffect(() => {
+    const savedSelectedMember = sessionStorage.getItem("selected-demoday");
+
+    if (savedSelectedMember) {
+      setSelectedMember(savedSelectedMember);
+      setHasVoted(true);
+    }
+  }, []);
 
   const isVoteEnabled = selectedMember !== "";
 
@@ -24,8 +33,14 @@ const page = () => {
   };
 
   const handleConfirmVote = () => {
+    sessionStorage.setItem("selected-demoday", selectedMember);
+
     setHasVoted(true);
     setIsModalOpen(false);
+  };
+
+  const handleRankingClick = () => {
+    router.push("/vote/demoday/ranking");
   };
 
   return (
@@ -57,9 +72,7 @@ const page = () => {
         )}
         <button
           type="button"
-          onClick={() =>
-            router.push(`/vote/demoday/ranking?selected=${encodeURIComponent(selectedMember)}`)
-          }
+          onClick={handleRankingClick}
           className="text-caption2-m md:text-body2-m mt-3 cursor-pointer"
         >
           현재 투표 순위 보러 가기

@@ -1,18 +1,21 @@
 "use client";
 
-import { Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import Chip from "@/components/common/Chip";
 import { demoVoteRankings } from "@/data/members";
 
-const DemodayRankingContent = () => {
-  const searchParams = useSearchParams();
-  const selectedItem = searchParams.get("selected");
+const Page = () => {
+  const [selectedMember, setSelectedMember] = useState<string | null>(null);
+
+  useEffect(() => {
+    const savedSelectedMember = sessionStorage.getItem("selected-demoday");
+    setSelectedMember(savedSelectedMember);
+  }, []);
 
   const updatedRankings = demoVoteRankings
     .map(item => ({
       ...item,
-      voteCount: item.label === selectedItem ? item.voteCount + 1 : item.voteCount,
+      voteCount: item.label === selectedMember ? item.voteCount + 1 : item.voteCount,
     }))
     .sort((a, b) => b.voteCount - a.voteCount)
     .map((item, index) => ({
@@ -38,7 +41,7 @@ const DemodayRankingContent = () => {
                 <Chip
                   label={item.label}
                   voteCount={item.voteCount}
-                  isSelected={selectedItem === item.label}
+                  isSelected={selectedMember === item.label}
                 />
               </div>
             </div>
@@ -49,12 +52,4 @@ const DemodayRankingContent = () => {
   );
 };
 
-const page = () => {
-  return (
-    <Suspense fallback={null}>
-      <DemodayRankingContent />
-    </Suspense>
-  );
-};
-
-export default page;
+export default Page;

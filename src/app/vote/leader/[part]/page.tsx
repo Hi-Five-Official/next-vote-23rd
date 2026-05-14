@@ -1,6 +1,6 @@
 "use client";
 import { frontendMembers, backendMembers } from "@/data/members";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
@@ -29,6 +29,17 @@ const page = () => {
   const [selectedMember, setSelectedMember] = useState<string>("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [hasVoted, setHasVoted] = useState(false);
+
+  useEffect(() => {
+    if (!part) return;
+
+    const savedSelectedMember = sessionStorage.getItem(`selected-leader-${part}`);
+
+    if (savedSelectedMember) {
+      setSelectedMember(savedSelectedMember);
+      setHasVoted(true);
+    }
+  }, [part]);
 
   const isVoteEnabled = selectedMember !== "";
 
