@@ -27,18 +27,20 @@ const DemodayRankingContent = () => {
           현재 데모데이 아이디어 투표 순위
         </h1>
 
-        <div className="grid w-full grid-cols-1 gap-x-10 gap-y-6 md:grid-cols-3 md:gap-x-8">
+        <div className="grid w-full grid-cols-1 gap-x-10 gap-y-3 md:grid-cols-3 md:gap-x-8 md:gap-y-6">
           {updatedRankings.map(item => (
-            <div key={item.label} className="flex min-w-max items-center gap-3">
+            <div key={item.label} className="flex min-w-max items-center gap-1">
               <span className="text-body1-sb md:text-heading1-sb w-8 text-right text-purple-50">
                 {item.rank}
               </span>
 
-              <Chip
-                label={item.label}
-                voteCount={item.voteCount}
-                isSelected={selectedItem === item.label}
-              />
+              <div className="[&_span:first-child]:mr-2">
+                <Chip
+                  label={item.label}
+                  voteCount={item.voteCount}
+                  isSelected={selectedItem === item.label}
+                />
+              </div>
             </div>
           ))}
         </div>
