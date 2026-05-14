@@ -9,6 +9,7 @@ import DropDown from "@/components/common/DropDown";
 import InputField from "@/components/common/InputField";
 import Modal from "@/components/common/Modal";
 import TabToggle from "@/components/common/TabToggle";
+import { EMAIL_REGEX, ID_REGEX } from "@/constants/regex";
 import { FIELDS, NAME_MAP, TABS, TEAM_OPTIONS } from "@/constants/signup";
 
 const Page = () => {
@@ -41,6 +42,9 @@ const Page = () => {
   const nameOptions = (NAME_MAP[team]?.[activeTab] ?? []).map(n => ({ label: n, value: n }));
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const isIdValid = ID_REGEX.test(fields.id);
+  const isEmailValid = EMAIL_REGEX.test(fields.email);
 
   const isFormValid = !!team && !!name && Object.values(fields).every(v => v.trim() !== "");
 
@@ -109,7 +113,9 @@ const Page = () => {
                 />
                 {hasCheckButton && (
                   <div className="absolute top-[45%] right-0 -translate-y-1/2">
-                    <Button variant="check">중복 확인</Button>
+                    <Button variant="check" disabled={key === "id" ? !isIdValid : !isEmailValid}>
+                      중복 확인
+                    </Button>
                   </div>
                 )}
               </div>

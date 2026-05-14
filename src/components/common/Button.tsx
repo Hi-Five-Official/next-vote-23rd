@@ -4,6 +4,7 @@ interface ButtonProps {
   children: React.ReactNode;
   variant?: "default" | "check";
   isSelected?: boolean;
+  disabled?: boolean;
   onClick?: () => void;
   className?: string;
 }
@@ -15,7 +16,7 @@ const variantStyles = {
     unselected: "hover:bg-purple-40 bg-white hover:text-white",
   },
   check: {
-    base: "rounded-50 cursor-pointer bg-purple-50 px-1.5 py-0.75 text-caption2-m text-white hover:bg-purple-40 mb-1.5",
+    base: "rounded-50 cursor-pointer bg-purple-50 px-1.5 py-0.75 text-caption2-m text-white hover:bg-purple-40 mb-1.5 disabled:cursor-not-allowed disabled:bg-gray-40 disabled:hover:bg-gray-40",
     selected: "",
     unselected: "",
   },
@@ -25,6 +26,7 @@ const Button = ({
   children,
   variant = "default",
   isSelected = false,
+  disabled = false,
   onClick,
   className,
 }: ButtonProps) => {
@@ -32,6 +34,7 @@ const Button = ({
   return (
     <button
       type="button"
+      disabled={disabled}
       onClick={onClick}
       className={cn(
         styles.base,
