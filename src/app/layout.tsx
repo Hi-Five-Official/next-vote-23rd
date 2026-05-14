@@ -5,8 +5,8 @@ import type { Metadata } from "next";
 import Header from "@/components/common/Header";
 
 export const metadata: Metadata = {
-  title: "next-vote-23rd",
-  description: "next-vote-23rd",
+  title: "CEOS 23rd Vote",
+  description: "CEOS 23rd Vote by Ditda",
 };
 
 export default function RootLayout({
