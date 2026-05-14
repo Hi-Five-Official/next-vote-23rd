@@ -1,7 +1,7 @@
 "use client";
 
-import { Suspense } from "react";
-import { useParams, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import Chip from "@/components/common/Chip";
 import { backendVoteRankings, frontendVoteRankings } from "@/data/members";
 
@@ -18,22 +18,21 @@ const rankingConfigs = {
 
 type LeaderPart = keyof typeof rankingConfigs;
 
-const RankingContent = () => {
+const page = () => {
   const params = useParams();
-  const searchParams = useSearchParams();
 
   const part = params.part as LeaderPart;
   const rankingConfig = rankingConfigs[part];
 
-  const selectedMember = searchParams.get("selected");
+  const [selectedMember, setSelectedMember] = useState<string | null>(null);
 
-  if (!rankingConfig) {
-    return (
-      <div className="min-h-screen bg-white px-2 pt-21">
-        <p className="text-body1-sb text-black">존재하지 않는 투표입니다.</p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (!part) return;
+
+    const savedSelectedMember = sessionStorage.getItem(`selected-leader-${part}`);
+
+    setSelectedMember(savedSelectedMember);
+  }, [part]);
 
   const updatedRankings = rankingConfig.rankings
     .map(item => ({
@@ -72,14 +71,6 @@ const RankingContent = () => {
         </div>
       </div>
     </div>
-  );
-};
-
-const page = () => {
-  return (
-    <Suspense fallback={null}>
-      <RankingContent />
-    </Suspense>
   );
 };
 

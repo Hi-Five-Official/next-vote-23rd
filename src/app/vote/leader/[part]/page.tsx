@@ -42,12 +42,14 @@ const page = () => {
   };
 
   const handleConfirmVote = () => {
+    sessionStorage.setItem(`selected-leader-${part}`, selectedMember);
+    //세션스토리지에 저장 및 API 연동 시 수정
     setHasVoted(true);
     setIsModalOpen(false);
   };
 
   const handleRankingClick = () => {
-    router.push(`/vote/leader/${part}/ranking?selected=${encodeURIComponent(selectedMember)}`);
+    router.push(`/vote/leader/${part}/ranking`);
   };
 
   return (
