@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
+import { setAuthCookie } from "@/app/actions/auth";
 import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
 import DropDown from "@/components/common/DropDown";
@@ -14,6 +15,7 @@ import TabToggle from "@/components/common/TabToggle";
 import { EMAIL_REGEX, ID_REGEX } from "@/constants/regex";
 import { FIELDS, NAME_MAP, TABS, TEAM_OPTIONS } from "@/constants/signup";
 import { SignupFormValues, signupSchema } from "@/constants/signupSchema";
+import { setAccessToken } from "@/lib/apis/api";
 import { postCheckDuplicateEmail, postCheckDuplicateId, postSignUp } from "@/lib/apis/auth";
 import type { ApiResponse } from "@/types/common";
 
@@ -115,7 +117,8 @@ const Page = () => {
         password: data.password,
       });
       if (res.result?.accessToken) {
-        localStorage.setItem("accessToken", res.result.accessToken);
+        setAccessToken(res.result.accessToken);
+        await setAuthCookie(res.result.accessToken);
       }
       setIsModalOpen(true);
     } catch (err) {

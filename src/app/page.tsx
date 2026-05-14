@@ -31,7 +31,7 @@ const Page = () => {
         <CTA
           label="투표하러 가기"
           onClick={() => {
-            if (localStorage.getItem("accessToken")) {
+            if (document.cookie.split(";").some(c => c.trim().startsWith("accessToken="))) {
               router.push("/vote");
             } else {
               setModalOpen(true);
