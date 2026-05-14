@@ -1,40 +1,45 @@
-import ky from "ky";
-
-import type { RefreshTokenResponse } from "@/types/auth";
-
-let accessToken: string | null = null;
-
-export const setAccessToken = (token: string | null) => {
-  accessToken = token;
-};
-
-export const getAccessToken = () => accessToken;
-
-// 토큰 재발급
-export const postRefreshToken = async (): Promise<string> => {
-  const response = (await ky
-    .post(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/refresh`, {
-      credentials: "include",
-    })
-    .json()) as RefreshTokenResponse;
-
-  if (!response.result) throw new Error(response.message);
-
-  setAccessToken(response.result.accessToken);
-  return response.result.accessToken;
-};
+import api from "@/lib/apis/api";
+import type {
+  CheckDuplicateEmailRequest,
+  CheckDuplicateEmailResponse,
+  CheckDuplicateIdRequest,
+  CheckDuplicateIdResponse,
+  LoginRequest,
+  LoginResponse,
+  LogoutResponse,
+  SignUpRequest,
+  SignUpResponse,
+} from "@/types/auth";
 
 // 로그인
-export const postLogin = async () => {};
+export const postLogin = async (body: LoginRequest): Promise<LoginResponse> => {
+  return (await api.post("api/v1/auth/login", { json: body }).json()) as LoginResponse;
+};
 
 // 로그아웃
-export const postLogout = async () => {};
+export const postLogout = async (): Promise<LogoutResponse> => {
+  return (await api.post("api/v1/auth/logout").json()) as LogoutResponse;
+};
 
 // 회원가입
-export const postSignUp = async () => {};
+export const postSignUp = async (body: SignUpRequest): Promise<SignUpResponse> => {
+  return (await api.post("api/v1/auth/signup", { json: body }).json()) as SignUpResponse;
+};
 
 // 아이디 중복 확인
-export const getCheckDuplicateId = async () => {};
+export const postCheckDuplicateId = async ({
+  username,
+}: CheckDuplicateIdRequest): Promise<CheckDuplicateIdResponse> => {
+  return (await api
+    .post("api/v1/auth/check-username", { json: { username } })
+    .json()) as CheckDuplicateIdResponse;
+};
 
 // 이메일 중복 확인
-export const getCheckDuplicateEmail = async () => {};
+export const postCheckDuplicateEmail = async ({
+  email,
+}: CheckDuplicateEmailRequest): Promise<CheckDuplicateEmailResponse> => {
+  return (await api
+    .post("api/v1/auth/check-email", { json: { email } })
+    .json()) as CheckDuplicateEmailResponse;
+};

@@ -1,6 +1,28 @@
 import ky from "ky";
 
-import { getAccessToken, postRefreshToken, setAccessToken } from "@/lib/apis/auth";
+import type { RefreshTokenResponse } from "@/types/auth";
+
+let accessToken: string | null = null;
+
+export const setAccessToken = (token: string | null) => {
+  accessToken = token;
+};
+
+export const getAccessToken = () => accessToken;
+
+// 토큰 재발급
+const postRefreshToken = async (): Promise<string> => {
+  const response = (await ky
+    .post(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/refresh`, {
+      credentials: "include",
+    })
+    .json()) as RefreshTokenResponse;
+
+  if (!response.result) throw new Error(response.message);
+
+  setAccessToken(response.result.accessToken);
+  return response.result.accessToken;
+};
 
 const api = ky.create({
   prefix: process.env.NEXT_PUBLIC_API_URL,
