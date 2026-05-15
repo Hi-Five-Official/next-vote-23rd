@@ -16,7 +16,6 @@ import { EMAIL_REGEX, ID_REGEX } from "@/constants/regex";
 import { FIELDS, NAME_MAP, TABS, TEAM_OPTIONS } from "@/constants/signup";
 import { SignupFormValues, signupSchema } from "@/constants/signupSchema";
 import { postCheckDuplicateEmail, postCheckDuplicateId, postSignUp } from "@/lib/apis/auth";
-import { saveToken } from "@/lib/utils/auth";
 import type { ApiResponse } from "@/types/common";
 
 type CheckStatus = "idle" | "available" | "duplicate";
@@ -108,7 +107,7 @@ const Page = () => {
     setIsSubmitting(true);
     setSubmitError(null);
     try {
-      const res = await postSignUp({
+      await postSignUp({
         part: activeTab,
         team,
         name,
@@ -116,9 +115,6 @@ const Page = () => {
         email: data.email,
         password: data.password,
       });
-      if (res.result?.accessToken) {
-        await saveToken(res.result.accessToken);
-      }
       setIsModalOpen(true);
     } catch (err) {
       if (err instanceof HTTPError) {
