@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { HTTPError } from "ky";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 
 import Button from "@/components/common/Button";
@@ -13,18 +13,25 @@ import InputField from "@/components/common/InputField";
 import Modal from "@/components/common/Modal";
 import TabToggle from "@/components/common/TabToggle";
 import { EMAIL_REGEX, ID_REGEX } from "@/constants/regex";
-import { FIELDS, NAME_MAP, TABS, TEAM_OPTIONS } from "@/constants/signup";
+import { FIELDS, TABS } from "@/constants/signup";
 import { SignupFormValues, signupSchema } from "@/constants/signupSchema";
 import { postCheckDuplicateEmail, postCheckDuplicateId, postSignUp } from "@/lib/apis/auth";
+import { getTeamCandidates, getTeams } from "@/lib/apis/team";
 import type { ApiResponse } from "@/types/common";
+import type { Part } from "@/types/team";
 
 type CheckStatus = "idle" | "available" | "duplicate";
+
+type Option = { label: string; value: string };
 
 const Page = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("FE");
-  const [team, setTeam] = useState("");
+  const [teamId, setTeamId] = useState<number | null>(null);
+  const [teamName, setTeamName] = useState("");
   const [name, setName] = useState("");
+  const [teamOptions, setTeamOptions] = useState<Option[]>([]);
+  const [candidateOptions, setCandidateOptions] = useState<Option[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [idCheckStatus, setIdCheckStatus] = useState<CheckStatus>("idle");
   const [emailCheckStatus, setEmailCheckStatus] = useState<CheckStatus>("idle");
@@ -47,18 +54,40 @@ const Page = () => {
   const idValue = useWatch({ control, name: "id", defaultValue: "" });
   const emailValue = useWatch({ control, name: "email", defaultValue: "" });
 
+  useEffect(() => {
+    getTeams().then(res => {
+      setTeamOptions(
+        (res.result?.teams ?? []).map(t => ({ label: t.name, value: String(t.teamId) })),
+      );
+    });
+  }, []);
+
+  useEffect(() => {
+    if (teamId === null) return;
+    getTeamCandidates(teamId, activeTab as Part).then(res => {
+      setCandidateOptions(
+        (res.result?.candidates ?? []).map(c => ({ label: c.name, value: c.name })),
+      );
+    });
+  }, [teamId, activeTab]);
+
   const handleTabChange = (value: string) => {
     setActiveTab(value);
-    setTeam("");
+    setTeamId(null);
+    setTeamName("");
     setName("");
+    setCandidateOptions([]);
     reset();
     setIdCheckStatus("idle");
     setEmailCheckStatus("idle");
   };
 
   const handleTeamChange = (value: string) => {
-    setTeam(value);
+    const selected = teamOptions.find(o => o.value === value);
+    setTeamId(Number(value));
+    setTeamName(selected?.label ?? "");
     setName("");
+    setCandidateOptions([]);
     reset();
     setIdCheckStatus("idle");
     setEmailCheckStatus("idle");
@@ -70,8 +99,6 @@ const Page = () => {
     setIdCheckStatus("idle");
     setEmailCheckStatus("idle");
   };
-
-  const nameOptions = (NAME_MAP[team]?.[activeTab] ?? []).map(n => ({ label: n, value: n }));
 
   const handleCheckId = async () => {
     setIsIdChecking(true);
@@ -109,7 +136,7 @@ const Page = () => {
     try {
       await postSignUp({
         part: activeTab,
-        team,
+        team: teamName,
         name,
         username: data.id,
         email: data.email,
@@ -129,7 +156,7 @@ const Page = () => {
   };
 
   const isFormReady =
-    !!team &&
+    !!teamId &&
     !!name &&
     isValid &&
     idCheckStatus === "available" &&
@@ -156,8 +183,8 @@ const Page = () => {
         <div className="flex flex-1 flex-col gap-3">
           <h3 className="md:text-body2-m text-caption2-m text-black">팀명 *</h3>
           <DropDown
-            options={TEAM_OPTIONS}
-            value={team}
+            options={teamOptions}
+            value={teamId !== null ? String(teamId) : ""}
             onChange={handleTeamChange}
             placeholder="팀명"
           />
@@ -165,13 +192,13 @@ const Page = () => {
         <div className="relative flex flex-1 flex-col gap-3">
           <h3 className="md:text-body2-m text-caption2-m text-black">이름 *</h3>
           <DropDown
-            options={nameOptions}
+            options={candidateOptions}
             value={name}
             onChange={handleNameChange}
             placeholder="이름"
-            disabled={!team}
+            disabled={teamId === null}
           />
-          {!team && (
+          {teamId === null && (
             <p className="text-caption2-m text-gray-70 absolute top-full mt-1.5 w-full text-center">
               팀명을 먼저 선택해주세요
             </p>
