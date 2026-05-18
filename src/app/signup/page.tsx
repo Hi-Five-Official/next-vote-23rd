@@ -38,6 +38,8 @@ const Page = () => {
   const [isEmailChecking, setIsEmailChecking] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [teamLoadError, setTeamLoadError] = useState<string | null>(null);
+  const [candidateLoadError, setCandidateLoadError] = useState<string | null>(null);
 
   const {
     register,
@@ -51,20 +53,29 @@ const Page = () => {
   });
 
   useEffect(() => {
-    getTeams().then(res => {
-      setTeamOptions(
-        (res.result?.teams ?? []).map(t => ({ label: t.name, value: String(t.teamId) })),
-      );
-    });
+    getTeams()
+      .then(res => {
+        setTeamOptions(
+          (res.result?.teams ?? []).map(t => ({ label: t.name, value: String(t.teamId) })),
+        );
+      })
+      .catch(() => {
+        setTeamLoadError("팀 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+      });
   }, []);
 
   useEffect(() => {
     if (teamId === null) return;
-    getTeamCandidates(teamId, activeTab as Part).then(res => {
-      setCandidateOptions(
-        (res.result?.candidates ?? []).map(c => ({ label: c.name, value: c.name })),
-      );
-    });
+    getTeamCandidates(teamId, activeTab as Part)
+      .then(res => {
+        setCandidateLoadError(null);
+        setCandidateOptions(
+          (res.result?.candidates ?? []).map(c => ({ label: c.name, value: c.name })),
+        );
+      })
+      .catch(() => {
+        setCandidateLoadError("팀원 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+      });
   }, [teamId, activeTab]);
 
   const handleTabChange = (value: string) => {
@@ -176,7 +187,7 @@ const Page = () => {
         <TabToggle tabs={TABS} value={activeTab} onChange={handleTabChange} />
       </div>
       <div className="flex flex-col gap-3 md:flex-row">
-        <div className="flex flex-1 flex-col gap-3">
+        <div className="relative flex flex-1 flex-col gap-3">
           <h3 className="md:text-body2-m text-caption2-m text-black">팀명 *</h3>
           <DropDown
             options={teamOptions}
@@ -184,6 +195,11 @@ const Page = () => {
             onChange={handleTeamChange}
             placeholder="팀명"
           />
+          {teamLoadError && (
+            <p className="text-caption2-m text-point-1 absolute top-full mt-1.5 w-full text-center">
+              {teamLoadError}
+            </p>
+          )}
         </div>
         <div className="relative flex flex-1 flex-col gap-3">
           <h3 className="md:text-body2-m text-caption2-m text-black">이름 *</h3>
@@ -194,9 +210,14 @@ const Page = () => {
             placeholder="이름"
             disabled={teamId === null}
           />
-          {teamId === null && (
+          {teamId === null && !teamLoadError && (
             <p className="text-caption2-m text-gray-70 absolute top-full mt-1.5 w-full text-center">
               팀명을 먼저 선택해주세요
+            </p>
+          )}
+          {candidateLoadError && (
+            <p className="text-caption2-m text-point-1 absolute top-full mt-1.5 w-full text-center">
+              {candidateLoadError}
             </p>
           )}
         </div>
