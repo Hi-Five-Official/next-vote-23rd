@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { HTTPError } from "ky";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { useForm, useWatch } from "react-hook-form";
+import { useForm } from "react-hook-form";
 
 import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
@@ -12,7 +12,6 @@ import DropDown from "@/components/common/DropDown";
 import InputField from "@/components/common/InputField";
 import Modal from "@/components/common/Modal";
 import TabToggle from "@/components/common/TabToggle";
-import { EMAIL_REGEX, ID_REGEX } from "@/constants/regex";
 import { FIELDS, TABS } from "@/constants/signup";
 import { SignupFormValues, signupSchema } from "@/constants/signupSchema";
 import { postCheckDuplicateEmail, postCheckDuplicateId, postSignUp } from "@/lib/apis/auth";
@@ -44,15 +43,12 @@ const Page = () => {
     register,
     handleSubmit,
     reset,
-    control,
-    formState: { errors, isValid },
+    getValues,
+    formState: { errors, isValid, dirtyFields },
   } = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
     mode: "onChange",
   });
-
-  const idValue = useWatch({ control, name: "id", defaultValue: "" });
-  const emailValue = useWatch({ control, name: "email", defaultValue: "" });
 
   useEffect(() => {
     getTeams().then(res => {
@@ -103,7 +99,7 @@ const Page = () => {
   const handleCheckId = async () => {
     setIsIdChecking(true);
     try {
-      const res = await postCheckDuplicateId({ username: idValue });
+      const res = await postCheckDuplicateId({ username: getValues("id") });
       setIdCheckStatus(res.success ? "available" : "duplicate");
     } catch {
       setIdCheckStatus("duplicate");
@@ -115,7 +111,7 @@ const Page = () => {
   const handleCheckEmail = async () => {
     setIsEmailChecking(true);
     try {
-      const res = await postCheckDuplicateEmail({ email: emailValue });
+      const res = await postCheckDuplicateEmail({ email: getValues("email") });
       setEmailCheckStatus(res.success ? "available" : "duplicate");
     } catch {
       setEmailCheckStatus("duplicate");
@@ -211,10 +207,8 @@ const Page = () => {
             const hasCheckButton = key === "id" || key === "email";
             const checkStatus = key === "id" ? idCheckStatus : emailCheckStatus;
             const isChecking = key === "id" ? isIdChecking : isEmailChecking;
-            const isCheckDisabled =
-              key === "id"
-                ? !ID_REGEX.test(idValue) || isIdChecking
-                : !EMAIL_REGEX.test(emailValue) || isEmailChecking;
+            const fieldKey = key as keyof SignupFormValues;
+            const isCheckDisabled = isChecking || !!errors[fieldKey] || !dirtyFields[fieldKey];
             return (
               <div key={key} className="flex flex-row items-center justify-between">
                 <label

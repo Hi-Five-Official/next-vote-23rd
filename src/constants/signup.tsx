@@ -25,19 +25,3 @@ export const FIELDS: { key: string; label: ReactNode; placeholder: string; type?
     type: "password",
   },
 ];
-
-export const TEAM_OPTIONS = [
-  { label: "JobDri", value: "JOBDRI" },
-  { label: "IPX", value: "IPX" },
-  { label: "CONX", value: "CONX" },
-  { label: "Groupeat", value: "GROUPEAT" },
-  { label: "Ditda", value: "DITDA" },
-];
-
-export const NAME_MAP: Record<string, Record<string, string[]>> = {
-  DITDA: { FE: ["박유민", "권오진"], BE: ["임종훈", "안준석"] },
-  JOBDRI: { FE: ["이윤서", "구민교"], BE: ["황신애", "최우혁"] },
-  GROUPEAT: { FE: ["이승연", "황영준"], BE: ["김동욱", "최승원"] },
-  IPX: { FE: ["남기림", "김민서"], BE: ["오지송", "김태익"] },
-  CONX: { FE: ["김홍엽", "오유진"], BE: ["김태희", "김도현"] },
-};
