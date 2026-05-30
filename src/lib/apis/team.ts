@@ -6,9 +6,13 @@ import type {
   Part,
 } from "@/types/team";
 
+type RequestOptions = {
+  signal?: AbortSignal;
+};
+
 // 팀 조회
-export const getTeams = async (): Promise<GetTeamsResponse> => {
-  return (await api.get("/api/v1/teams").json()) as GetTeamsResponse;
+export const getTeams = async (options?: RequestOptions): Promise<GetTeamsResponse> => {
+  return (await api.get("/api/v1/teams", { signal: options?.signal }).json()) as GetTeamsResponse;
 };
 
 // 데모데이 팀 투표 후보 조회
@@ -20,8 +24,12 @@ export const getVotingTeams = async (): Promise<GetVotingTeamsResponse> => {
 export const getTeamCandidates = async (
   teamId: number,
   part: Part,
+  options?: RequestOptions,
 ): Promise<GetTeamCandidatesResponse> => {
   return (await api
-    .get(`/api/v1/teams/${teamId}/candidates`, { searchParams: { part } })
+    .get(`/api/v1/teams/${teamId}/candidates`, {
+      searchParams: { part },
+      signal: options?.signal,
+    })
     .json()) as GetTeamCandidatesResponse;
 };

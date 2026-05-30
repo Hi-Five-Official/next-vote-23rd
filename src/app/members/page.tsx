@@ -6,7 +6,7 @@ import ProfileCard from "@/components/common/ProfileCard";
 import TabToggle from "@/components/common/TabToggle";
 import { TABS } from "@/constants/signup";
 import { getTeamCandidates, getTeams } from "@/lib/apis/team";
-import type { Part } from "@/types/team";
+import type { Part, Team } from "@/types/team";
 
 type MemberProfile = {
   candidateId: number;
@@ -18,9 +18,38 @@ type MembersByPart = Record<Part, MemberProfile[]>;
 
 const PARTS: Part[] = ["FE", "BE"];
 const INITIAL_MEMBERS: MembersByPart = { FE: [], BE: [] };
+const DEFAULT_MEMBER_LOAD_ERROR_MESSAGE =
+  "멤버 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.";
 
 const sortMembersByName = (members: MemberProfile[]) =>
-  members.sort((a, b) => a.name.localeCompare(b.name, "ko-KR"));
+  [...members].sort((a, b) => a.name.localeCompare(b.name, "ko-KR"));
+
+const isAbortError = (err: unknown) => err instanceof DOMException && err.name === "AbortError";
+
+const getMembersByPart = async (teams: Team[], signal: AbortSignal): Promise<MembersByPart> => {
+  const nextMembers: MembersByPart = { FE: [], BE: [] };
+
+  for (const part of PARTS) {
+    const members: MemberProfile[] = [];
+
+    for (const team of teams) {
+      signal.throwIfAborted();
+
+      const candidatesResponse = await getTeamCandidates(team.teamId, part, { signal });
+      members.push(
+        ...(candidatesResponse.result?.candidates ?? []).map(candidate => ({
+          candidateId: candidate.candidateId,
+          name: candidate.name,
+          team: team.name,
+        })),
+      );
+    }
+
+    nextMembers[part] = sortMembersByName(members);
+  }
+
+  return nextMembers;
+};
 
 const Page = () => {
   const [selectedTab, setSelectedTab] = useState<Part>("FE");
@@ -29,39 +58,34 @@ const Page = () => {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    getTeams()
+    const controller = new AbortController();
+    let isMounted = true;
+
+    getTeams({ signal: controller.signal })
       .then(async res => {
+        if (!isMounted) return;
+
         const teams = res.result?.teams ?? [];
-        const membersEntries = await Promise.all(
-          PARTS.map(async part => {
-            const membersByTeam = await Promise.all(
-              teams.map(async team => {
-                const candidatesResponse = await getTeamCandidates(team.teamId, part);
-                return (candidatesResponse.result?.candidates ?? []).map(candidate => ({
-                  candidateId: candidate.candidateId,
-                  name: candidate.name,
-                  team: team.name,
-                }));
-              }),
-            );
+        const nextMembers = await getMembersByPart(teams, controller.signal);
 
-            return [part, sortMembersByName(membersByTeam.flat())] as const;
-          }),
-        );
+        if (!isMounted) return;
 
-        const nextMembers: MembersByPart = { FE: [], BE: [] };
-        membersEntries.forEach(([part, members]) => {
-          nextMembers[part] = members;
-        });
         setLoadError(null);
         setMembersByPart(nextMembers);
       })
-      .catch(() => {
-        setLoadError("멤버 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+      .catch(err => {
+        if (!isMounted) return;
+        if (isAbortError(err)) return;
+        setLoadError(DEFAULT_MEMBER_LOAD_ERROR_MESSAGE);
       })
       .finally(() => {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       });
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
   }, []);
 
   const handleTabChange = (value: string) => {
