@@ -1,29 +1,26 @@
 "use client";
 
+import { HTTPError } from "ky";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
 import Modal from "@/components/common/Modal";
-import { STORAGE_KEY } from "@/constants/vote";
 import { getVotingTeams } from "@/lib/apis/team";
+import { postTeamVote } from "@/lib/apis/vote";
+import type { ApiResponse } from "@/types/common";
 import type { VotingTeam } from "@/types/team";
 
 const Page = () => {
   const router = useRouter();
   const [teams, setTeams] = useState<VotingTeam[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
-  const [votedInSession, setVotedInSession] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isVoting, setIsVoting] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
-
-  const storedTeamName = useSyncExternalStore(
-    () => () => {},
-    () => sessionStorage.getItem(STORAGE_KEY.DEMODAY) ?? "",
-    () => "",
-  );
+  const [voteError, setVoteError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -53,29 +50,55 @@ const Page = () => {
     [selectedTeamId, teams],
   );
 
-  const hasVoted = votedInSession || !!storedTeamName || !!serverVotedTeam;
-  const isVoteEnabled = selectedTeamId !== null && !hasVoted;
+  const hasVoted = !!serverVotedTeam;
+  const isVoteEnabled = selectedTeamId !== null && !hasVoted && !isVoting;
 
   const isTeamSelected = (team: VotingTeam) => {
     if (serverVotedTeam) return serverVotedTeam.teamId === team.teamId;
-    if (storedTeamName) return storedTeamName === team.name;
     return selectedTeamId === team.teamId;
   };
 
   const handleVoteClick = () => {
-    if (!selectedTeam || hasVoted) return;
+    if (!selectedTeam || hasVoted || isVoting) return;
     setIsModalOpen(true);
   };
 
   const handleCancelVote = () => {
+    if (isVoting) return;
     setIsModalOpen(false);
   };
 
-  const handleConfirmVote = () => {
-    if (!selectedTeam) return;
-    sessionStorage.setItem(STORAGE_KEY.DEMODAY, selectedTeam.name);
-    setVotedInSession(true);
-    setIsModalOpen(false);
+  const handleConfirmVote = async () => {
+    if (!selectedTeam || isVoting) return;
+
+    setIsVoting(true);
+    setVoteError(null);
+    try {
+      const response = await postTeamVote({ teamId: selectedTeam.teamId });
+      if (!response.success) {
+        setVoteError(response.message ?? "투표에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        setIsModalOpen(false);
+        return;
+      }
+
+      setTeams(prevTeams =>
+        prevTeams.map(team => ({
+          ...team,
+          isMyVote: team.teamId === selectedTeam.teamId,
+        })),
+      );
+      setIsModalOpen(false);
+    } catch (err) {
+      if (err instanceof HTTPError) {
+        const body = (await err.response.json()) as ApiResponse;
+        setVoteError(body.message ?? "투표에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      } else {
+        setVoteError("투표에 실패했습니다. 잠시 후 다시 시도해주세요.");
+      }
+      setIsModalOpen(false);
+    } finally {
+      setIsVoting(false);
+    }
   };
 
   const handleRankingClick = () => {
@@ -119,6 +142,11 @@ const Page = () => {
             <CTA label="투표하기" disabled={!isVoteEnabled} onClick={handleVoteClick} />
           </div>
         )}
+        {voteError && (
+          <p className="text-caption2-m md:text-body2-m text-point-1 mt-3 text-center">
+            {voteError}
+          </p>
+        )}
         <button
           type="button"
           onClick={handleRankingClick}
@@ -133,7 +161,7 @@ const Page = () => {
           title={`투표는 분야별 1회만 가능하며,\n제출 후에는 수정이 어렵습니다.`}
           description="투표하시겠습니까?"
           leftLabel="아니오"
-          rightLabel="예"
+          rightLabel={isVoting ? "투표 중..." : "예"}
           onCancel={handleCancelVote}
           onClose={handleCancelVote}
           onConfirm={handleConfirmVote}
