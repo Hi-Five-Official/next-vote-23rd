@@ -6,32 +6,14 @@ import { useEffect, useMemo, useState } from "react";
 import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
 import Modal from "@/components/common/Modal";
-import { LEADER_CONFIGS, type LeaderPart } from "@/constants/vote";
+import { LEADER_CONFIGS, LEADER_PART_TO_API_PART, type LeaderPart } from "@/constants/vote";
 import { getVotingCandidates } from "@/lib/apis/candidate";
+import { postCandidateVote } from "@/lib/apis/vote";
 import type { VotingCandidate } from "@/types/candidate";
 import type { ApiResponse } from "@/types/common";
-import type { Part } from "@/types/team";
-
-type CandidateLoadState = {
-  part: Part | null;
-  candidates: VotingCandidate[];
-  error: string | null;
-  status: "loading" | "success" | "error";
-};
-
-const LEADER_PART_TO_API_PART: Record<LeaderPart, Part> = {
-  frontend: "FE",
-  backend: "BE",
-};
 
 const DEFAULT_CANDIDATE_LOAD_ERROR_MESSAGE = "파트장 후보 목록을 불러오지 못했습니다.";
-const INITIAL_CANDIDATE_LOAD_STATE: CandidateLoadState = {
-  part: null,
-  candidates: [],
-  error: null,
-  status: "loading",
-};
-const EMPTY_CANDIDATES: VotingCandidate[] = [];
+const DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE = "투표에 실패했습니다. 잠시 후 다시 시도해주세요.";
 
 const sortCandidatesByName = (candidates: VotingCandidate[]) =>
   [...candidates].sort((a, b) => a.name.localeCompare(b.name, "ko-KR"));
@@ -55,52 +37,37 @@ const Page = () => {
   const apiPart = LEADER_PART_TO_API_PART[part];
   const voteConfig = LEADER_CONFIGS[part];
 
-  const [candidateLoadState, setCandidateLoadState] = useState<CandidateLoadState>(
-    INITIAL_CANDIDATE_LOAD_STATE,
-  );
+  const [candidates, setCandidates] = useState<VotingCandidate[]>([]);
   const [selectedCandidateId, setSelectedCandidateId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isVoting, setIsVoting] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [voteError, setVoteError] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
-
-    if (!apiPart) {
-      return () => {
-        isMounted = false;
-      };
-    }
 
     getVotingCandidates(apiPart)
       .then(res => {
         if (!isMounted) return;
         setSelectedCandidateId(null);
-        setCandidateLoadState({
-          part: apiPart,
-          candidates: sortCandidatesByName(res.result?.candidates ?? []),
-          error: null,
-          status: "success",
-        });
+        setCandidates(sortCandidatesByName(res.result?.candidates ?? []));
+        setLoadError(null);
       })
       .catch(async err => {
         if (!isMounted) return;
-        setCandidateLoadState({
-          part: apiPart,
-          candidates: [],
-          error: await getCandidateLoadErrorMessage(err),
-          status: "error",
-        });
+        setCandidates([]);
+        setLoadError(await getCandidateLoadErrorMessage(err));
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
       });
 
     return () => {
       isMounted = false;
     };
   }, [apiPart]);
-
-  const candidates =
-    candidateLoadState.part === apiPart ? candidateLoadState.candidates : EMPTY_CANDIDATES;
-  const loadError = candidateLoadState.part === apiPart ? candidateLoadState.error : null;
-  const isLoading =
-    !!apiPart && (candidateLoadState.part !== apiPart || candidateLoadState.status === "loading");
 
   const serverVotedCandidate = useMemo(
     () => candidates.find(candidate => candidate.isMyVote),
@@ -111,11 +78,9 @@ const Page = () => {
     [selectedCandidateId, candidates],
   );
 
-  const isInvalidPart = !apiPart;
-  const displayLoadError = isInvalidPart ? "올바르지 않은 파트입니다." : loadError;
   const hasVoted = !!serverVotedCandidate;
-  const isVoteEnabled = selectedCandidateId !== null && !hasVoted;
-  const hasCandidates = !isLoading && !displayLoadError && candidates.length > 0;
+  const isVoteEnabled = selectedCandidateId !== null && !hasVoted && !isVoting;
+  const hasCandidates = !isLoading && !loadError && candidates.length > 0;
 
   const isCandidateSelected = (candidate: VotingCandidate) => {
     if (serverVotedCandidate) {
@@ -125,16 +90,46 @@ const Page = () => {
   };
 
   const handleVoteClick = () => {
-    if (!selectedCandidate || hasVoted) return;
+    if (!selectedCandidate || hasVoted || isVoting) return;
     setIsModalOpen(true);
   };
 
   const handleCancelVote = () => {
+    if (isVoting) return;
     setIsModalOpen(false);
   };
 
-  const handleConfirmVote = () => {
-    setIsModalOpen(false);
+  const handleConfirmVote = async () => {
+    if (!selectedCandidate || isVoting) return;
+
+    setIsVoting(true);
+    setVoteError(null);
+    try {
+      const response = await postCandidateVote({ candidateId: selectedCandidate.candidateId });
+      if (!response.success) {
+        setVoteError(response.message ?? DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE);
+        setIsModalOpen(false);
+        return;
+      }
+
+      setCandidates(prevCandidates =>
+        prevCandidates.map(candidate => ({
+          ...candidate,
+          isMyVote: candidate.candidateId === selectedCandidate.candidateId,
+        })),
+      );
+      setIsModalOpen(false);
+    } catch (err) {
+      if (err instanceof HTTPError) {
+        const body = (await err.response.json()) as ApiResponse;
+        setVoteError(body.message ?? DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE);
+      } else {
+        setVoteError(DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE);
+      }
+      setIsModalOpen(false);
+    } finally {
+      setIsVoting(false);
+    }
   };
 
   const handleRankingClick = () => {
@@ -147,14 +142,14 @@ const Page = () => {
         <h1 className="text-body1-sb md:text-heading1-sb text-purple-60 mb-5 md:mb-10">
           {voteConfig.title}
         </h1>
-        {!isInvalidPart && isLoading && (
+        {isLoading && (
           <p className="text-caption2-m md:text-body2-m text-gray-70 mt-6 text-center">
             파트장 후보를 불러오는 중입니다.
           </p>
         )}
-        {displayLoadError && (
+        {!isLoading && loadError && (
           <p className="text-caption2-m md:text-body2-m text-point-1 mt-6 text-center">
-            {displayLoadError}
+            {loadError}
           </p>
         )}
         {hasCandidates && (
@@ -178,6 +173,11 @@ const Page = () => {
             <CTA label="투표하기" disabled={!isVoteEnabled} onClick={handleVoteClick} />
           </div>
         )}
+        {voteError && (
+          <p className="text-caption2-m md:text-body2-m text-point-1 mt-3 text-center">
+            {voteError}
+          </p>
+        )}
         <button
           type="button"
           onClick={handleRankingClick}
@@ -191,7 +191,7 @@ const Page = () => {
             title="투표는 분야별 1회만 가능하며, 제출 후에는 수정이 어렵습니다."
             description="투표하시겠습니까?"
             leftLabel="아니오"
-            rightLabel="예"
+            rightLabel={isVoting ? "투표 중..." : "예"}
             onCancel={handleCancelVote}
             onClose={handleCancelVote}
             onConfirm={handleConfirmVote}

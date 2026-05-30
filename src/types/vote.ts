@@ -15,3 +15,23 @@ export type TeamVoteResult = VotingTeam & {
 };
 
 export type GetTeamVoteResultsResponse = ApiResponse<{ teams: TeamVoteResult[] }>;
+
+// 파트장 투표 request
+export type PostCandidateVoteRequest = {
+  candidateId: number;
+};
+
+// 파트장 투표 response
+export type PostCandidateVoteResponse = ApiResponse<string>;
+
+// 파트장 투표 결과 response
+export type CandidateVoteResult = {
+  candidateId: number;
+  name: string;
+  voteCount: number;
+  isMyVote: boolean;
+};
+
+export type GetCandidateVoteResultsResponse = ApiResponse<{
+  candidates: CandidateVoteResult[];
+}>;

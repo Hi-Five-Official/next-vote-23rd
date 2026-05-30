@@ -1,31 +1,56 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Chip from "@/components/common/Chip";
-import { LEADER_CONFIGS, type LeaderPart, STORAGE_KEY } from "@/constants/vote";
+import { LEADER_CONFIGS, LEADER_PART_TO_API_PART, type LeaderPart } from "@/constants/vote";
+import { getCandidateVoteResults } from "@/lib/apis/vote";
+import type { CandidateVoteResult } from "@/types/vote";
 
 const Page = () => {
   const params = useParams();
 
   const part = params.part as LeaderPart;
+  const apiPart = LEADER_PART_TO_API_PART[part];
   const rankingConfig = LEADER_CONFIGS[part];
 
-  const [selectedMember] = useState<string | null>(() =>
-    sessionStorage.getItem(STORAGE_KEY.LEADER(part)),
-  );
+  const [candidates, setCandidates] = useState<CandidateVoteResult[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
-  const updatedRankings = rankingConfig.rankings
-    .map(item => ({
-      ...item,
-      voteCount: item.label === selectedMember ? item.voteCount + 1 : item.voteCount,
-    }))
-    .sort((a, b) => b.voteCount - a.voteCount)
-    .map((item, index) => ({
-      ...item,
-      rank: index + 1,
-    }));
+  useEffect(() => {
+    let isMounted = true;
+
+    getCandidateVoteResults(apiPart)
+      .then(res => {
+        if (!isMounted) return;
+        setCandidates(res.result?.candidates ?? []);
+        setLoadError(null);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setLoadError("파트장 투표 결과를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [apiPart]);
+
+  const rankings = useMemo(
+    () =>
+      [...candidates]
+        .sort((a, b) => b.voteCount - a.voteCount)
+        .map((candidate, index) => ({
+          ...candidate,
+          rank: index + 1,
+        })),
+    [candidates],
+  );
 
   return (
     <div>
@@ -33,20 +58,28 @@ const Page = () => {
         <h1 className="text-body1-sb md:text-heading1-sb text-purple-60 mb-6 md:mb-10">
           {rankingConfig.rankingTitle}
         </h1>
-        <div className="grid w-full grid-cols-1 gap-y-4 md:grid-cols-2 md:justify-items-center md:gap-y-4">
-          {updatedRankings.map(item => (
-            <div key={item.label} className="flex items-center gap-4">
-              <span className="text-body1-sb md:text-heading1-sb w-6 shrink-0 text-right text-purple-50">
-                {item.rank}
-              </span>
-              <Chip
-                label={item.label}
-                voteCount={item.voteCount}
-                isSelected={selectedMember === item.label}
-              />
-            </div>
-          ))}
-        </div>
+        {isLoading && (
+          <p className="text-caption2-m md:text-body2-m text-gray-70 mt-6 text-center">
+            파트장 투표 결과를 불러오는 중입니다.
+          </p>
+        )}
+        {!isLoading && loadError && (
+          <p className="text-caption2-m md:text-body2-m text-point-1 mt-6 text-center">
+            {loadError}
+          </p>
+        )}
+        {!isLoading && !loadError && (
+          <div className="grid w-full grid-cols-1 gap-y-4 md:grid-cols-2 md:justify-items-center md:gap-y-4">
+            {rankings.map(item => (
+              <div key={item.candidateId} className="flex items-center gap-4">
+                <span className="text-body1-sb md:text-heading1-sb w-6 shrink-0 text-right text-purple-50">
+                  {item.rank}
+                </span>
+                <Chip label={item.name} voteCount={item.voteCount} isSelected={item.isMyVote} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

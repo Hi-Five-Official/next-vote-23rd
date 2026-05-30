@@ -12,6 +12,8 @@ import { postTeamVote } from "@/lib/apis/vote";
 import type { ApiResponse } from "@/types/common";
 import type { VotingTeam } from "@/types/team";
 
+const DEFAULT_TEAM_VOTE_ERROR_MESSAGE = "투표에 실패했습니다. 잠시 후 다시 시도해주세요.";
+
 const Page = () => {
   const router = useRouter();
   const [teams, setTeams] = useState<VotingTeam[]>([]);
@@ -76,7 +78,7 @@ const Page = () => {
     try {
       const response = await postTeamVote({ teamId: selectedTeam.teamId });
       if (!response.success) {
-        setVoteError(response.message ?? "투표에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        setVoteError(response.message ?? DEFAULT_TEAM_VOTE_ERROR_MESSAGE);
         setIsModalOpen(false);
         return;
       }
@@ -91,9 +93,9 @@ const Page = () => {
     } catch (err) {
       if (err instanceof HTTPError) {
         const body = (await err.response.json()) as ApiResponse;
-        setVoteError(body.message ?? "투표에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        setVoteError(body.message ?? DEFAULT_TEAM_VOTE_ERROR_MESSAGE);
       } else {
-        setVoteError("투표에 실패했습니다. 잠시 후 다시 시도해주세요.");
+        setVoteError(DEFAULT_TEAM_VOTE_ERROR_MESSAGE);
       }
       setIsModalOpen(false);
     } finally {
