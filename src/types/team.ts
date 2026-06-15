@@ -8,6 +8,13 @@ export type Team = {
 
 export type GetTeamsResponse = ApiResponse<{ teams: Team[] }>;
 
+// 팀 투표 후보 조회 response
+export type VotingTeam = Team & {
+  isMyVote: boolean;
+};
+
+export type GetVotingTeamsResponse = ApiResponse<{ teams: VotingTeam[] }>;
+
 // 팀별 팀원 조회 response
 export type Part = "FE" | "BE";
 

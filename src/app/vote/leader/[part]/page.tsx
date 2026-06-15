@@ -1,47 +1,147 @@
 "use client";
-import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
+import { HTTPError } from "ky";
+import { notFound, useParams, useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 
 import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
 import Modal from "@/components/common/Modal";
-import { LEADER_CONFIGS, type LeaderPart, STORAGE_KEY } from "@/constants/vote";
+import { isLeaderPart, LEADER_CONFIGS, LEADER_PART_TO_API_PART } from "@/constants/vote";
+import { getVotingCandidates } from "@/lib/apis/candidate";
+import { postCandidateVote } from "@/lib/apis/vote";
+import type { VotingCandidate } from "@/types/candidate";
+import type { ApiResponse } from "@/types/common";
+
+const DEFAULT_CANDIDATE_LOAD_ERROR_MESSAGE = "파트장 후보 목록을 불러오지 못했습니다.";
+const DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE = "투표에 실패했습니다. 잠시 후 다시 시도해주세요.";
+
+const sortCandidatesByName = (candidates: VotingCandidate[]) =>
+  [...candidates].sort((a, b) => a.name.localeCompare(b.name, "ko-KR"));
+
+const getCandidateLoadErrorMessage = async (err: unknown) => {
+  if (!(err instanceof HTTPError)) return DEFAULT_CANDIDATE_LOAD_ERROR_MESSAGE;
+
+  try {
+    const body = (await err.response.json()) as ApiResponse;
+    return body.message ?? DEFAULT_CANDIDATE_LOAD_ERROR_MESSAGE;
+  } catch {
+    return DEFAULT_CANDIDATE_LOAD_ERROR_MESSAGE;
+  }
+};
+
+const getCandidateVoteErrorMessage = async (err: unknown) => {
+  if (!(err instanceof HTTPError)) return DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE;
+
+  try {
+    const body = (await err.response.json()) as ApiResponse;
+    return body.message ?? DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE;
+  } catch {
+    return DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE;
+  }
+};
 
 const Page = () => {
   const router = useRouter();
-  const params = useParams();
+  const params = useParams<{ part: string }>();
 
-  const part = params.part as LeaderPart;
+  if (!isLeaderPart(params.part)) notFound();
+
+  const part = params.part;
+  const apiPart = LEADER_PART_TO_API_PART[part];
   const voteConfig = LEADER_CONFIGS[part];
 
-  const [selectedMember, setSelectedMember] = useState<string>(
-    () => sessionStorage.getItem(STORAGE_KEY.LEADER(part)) ?? "",
-  );
+  const [candidates, setCandidates] = useState<VotingCandidate[]>([]);
+  const [selectedCandidateId, setSelectedCandidateId] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [hasVoted, setHasVoted] = useState(
-    () => !!sessionStorage.getItem(STORAGE_KEY.LEADER(part)),
+  const [isLoading, setIsLoading] = useState(true);
+  const [isVoting, setIsVoting] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [voteError, setVoteError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    getVotingCandidates(apiPart)
+      .then(res => {
+        if (!isMounted) return;
+        setSelectedCandidateId(null);
+        setCandidates(sortCandidatesByName(res.result?.candidates ?? []));
+        setLoadError(null);
+      })
+      .catch(async err => {
+        if (!isMounted) return;
+        setCandidates([]);
+        setLoadError(await getCandidateLoadErrorMessage(err));
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [apiPart]);
+
+  const serverVotedCandidate = useMemo(
+    () => candidates.find(candidate => candidate.isMyVote),
+    [candidates],
+  );
+  const selectedCandidate = useMemo(
+    () => candidates.find(candidate => candidate.candidateId === selectedCandidateId) ?? null,
+    [selectedCandidateId, candidates],
   );
 
-  const isVoteEnabled = selectedMember !== "";
+  const hasVoted = !!serverVotedCandidate;
+  const isVoteEnabled = selectedCandidateId !== null && !hasVoted && !isVoting;
+  const hasCandidates = !isLoading && !loadError && candidates.length > 0;
+
+  const isCandidateSelected = (candidate: VotingCandidate) => {
+    if (serverVotedCandidate) {
+      return serverVotedCandidate.candidateId === candidate.candidateId;
+    }
+    return selectedCandidateId === candidate.candidateId;
+  };
 
   const handleVoteClick = () => {
-    if (!selectedMember) return;
+    if (!selectedCandidate || hasVoted || isVoting) return;
     setIsModalOpen(true);
   };
 
   const handleCancelVote = () => {
+    if (isVoting) return;
     setIsModalOpen(false);
   };
 
-  const handleConfirmVote = () => {
-    sessionStorage.setItem(STORAGE_KEY.LEADER(part), selectedMember);
-    //세션스토리지에 저장 및 API 연동 시 수정
-    setHasVoted(true);
-    setIsModalOpen(false);
+  const handleConfirmVote = async () => {
+    if (!selectedCandidate || isVoting) return;
+
+    setIsVoting(true);
+    setVoteError(null);
+    try {
+      const response = await postCandidateVote({ candidateId: selectedCandidate.candidateId });
+      if (!response.success) {
+        setVoteError(response.message ?? DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE);
+        setIsModalOpen(false);
+        return;
+      }
+
+      setCandidates(prevCandidates =>
+        prevCandidates.map(candidate => ({
+          ...candidate,
+          isMyVote: candidate.candidateId === selectedCandidate.candidateId,
+        })),
+      );
+      setIsModalOpen(false);
+    } catch (err) {
+      setVoteError(await getCandidateVoteErrorMessage(err));
+      setIsModalOpen(false);
+    } finally {
+      setIsVoting(false);
+    }
   };
 
   const handleRankingClick = () => {
-    router.push(`/vote/leader/${part}/ranking`);
+    router.push(voteConfig.rankingHref);
   };
 
   return (
@@ -50,24 +150,41 @@ const Page = () => {
         <h1 className="text-body1-sb md:text-heading1-sb text-purple-60 mb-5 md:mb-10">
           {voteConfig.title}
         </h1>
-        <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-2 md:mt-3 md:gap-x-3 md:gap-y-3">
-          {voteConfig.members.map(member => (
-            <Button
-              key={member.name}
-              isSelected={selectedMember === member.name}
-              onClick={() => {
-                if (hasVoted) return;
-                setSelectedMember(member.name);
-              }}
-            >
-              {member.name}
-            </Button>
-          ))}
-        </div>
-        {!hasVoted && (
+        {isLoading && (
+          <p className="text-caption2-m md:text-body2-m text-gray-70 mt-6 text-center">
+            파트장 후보를 불러오는 중입니다.
+          </p>
+        )}
+        {!isLoading && loadError && (
+          <p className="text-caption2-m md:text-body2-m text-point-1 mt-6 text-center">
+            {loadError}
+          </p>
+        )}
+        {hasCandidates && (
+          <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-2 md:mt-3 md:gap-x-3 md:gap-y-3">
+            {candidates.map(candidate => (
+              <Button
+                key={candidate.candidateId}
+                isSelected={isCandidateSelected(candidate)}
+                onClick={() => {
+                  if (hasVoted) return;
+                  setSelectedCandidateId(candidate.candidateId);
+                }}
+              >
+                {candidate.name}
+              </Button>
+            ))}
+          </div>
+        )}
+        {!hasVoted && hasCandidates && (
           <div className="mt-10 md:mt-14">
             <CTA label="투표하기" disabled={!isVoteEnabled} onClick={handleVoteClick} />
           </div>
+        )}
+        {voteError && (
+          <p className="text-caption2-m md:text-body2-m text-point-1 mt-3 text-center">
+            {voteError}
+          </p>
         )}
         <button
           type="button"
@@ -82,7 +199,7 @@ const Page = () => {
             title="투표는 분야별 1회만 가능하며, 제출 후에는 수정이 어렵습니다."
             description="투표하시겠습니까?"
             leftLabel="아니오"
-            rightLabel="예"
+            rightLabel={isVoting ? "투표 중..." : "예"}
             onCancel={handleCancelVote}
             onClose={handleCancelVote}
             onConfirm={handleConfirmVote}

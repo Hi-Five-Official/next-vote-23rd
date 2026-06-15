@@ -1,43 +1,106 @@
 "use client";
+
+import { HTTPError } from "ky";
 import { useRouter } from "next/navigation";
-import { useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
 import Modal from "@/components/common/Modal";
-import { STORAGE_KEY } from "@/constants/vote";
-import { idea } from "@/data/members";
+import { getVotingTeams } from "@/lib/apis/team";
+import { postTeamVote } from "@/lib/apis/vote";
+import type { ApiResponse } from "@/types/common";
+import type { VotingTeam } from "@/types/team";
+
+const DEFAULT_TEAM_VOTE_ERROR_MESSAGE = "투표에 실패했습니다. 잠시 후 다시 시도해주세요.";
 
 const Page = () => {
   const router = useRouter();
+  const [teams, setTeams] = useState<VotingTeam[]>([]);
+  const [selectedTeamId, setSelectedTeamId] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isVoting, setIsVoting] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [voteError, setVoteError] = useState<string | null>(null);
 
-  const storedMember = useSyncExternalStore(
-    () => () => {},
-    () => sessionStorage.getItem(STORAGE_KEY.DEMODAY) ?? "",
-    () => "",
+  useEffect(() => {
+    let isMounted = true;
+
+    getVotingTeams()
+      .then(res => {
+        if (!isMounted) return;
+        setTeams(res.result?.teams ?? []);
+        setLoadError(null);
+      })
+      .catch(() => {
+        if (!isMounted) return;
+        setLoadError("데모데이 팀 후보 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const serverVotedTeam = useMemo(() => teams.find(team => team.isMyVote), [teams]);
+  const selectedTeam = useMemo(
+    () => teams.find(team => team.teamId === selectedTeamId) ?? null,
+    [selectedTeamId, teams],
   );
 
-  const [selectedMember, setSelectedMember] = useState<string>("");
-  const [votedInSession, setVotedInSession] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const hasVoted = !!serverVotedTeam;
+  const isVoteEnabled = selectedTeamId !== null && !hasVoted && !isVoting;
 
-  const hasVoted = votedInSession || !!storedMember;
-  const displayMember = storedMember || selectedMember;
-  const isVoteEnabled = selectedMember !== "" && !hasVoted;
+  const isTeamSelected = (team: VotingTeam) => {
+    if (serverVotedTeam) return serverVotedTeam.teamId === team.teamId;
+    return selectedTeamId === team.teamId;
+  };
 
   const handleVoteClick = () => {
-    if (!selectedMember) return;
+    if (!selectedTeam || hasVoted || isVoting) return;
     setIsModalOpen(true);
   };
 
   const handleCancelVote = () => {
+    if (isVoting) return;
     setIsModalOpen(false);
   };
 
-  const handleConfirmVote = () => {
-    sessionStorage.setItem(STORAGE_KEY.DEMODAY, selectedMember);
-    setVotedInSession(true);
-    setIsModalOpen(false);
+  const handleConfirmVote = async () => {
+    if (!selectedTeam || isVoting) return;
+
+    setIsVoting(true);
+    setVoteError(null);
+    try {
+      const response = await postTeamVote({ teamId: selectedTeam.teamId });
+      if (!response.success) {
+        setVoteError(response.message ?? DEFAULT_TEAM_VOTE_ERROR_MESSAGE);
+        setIsModalOpen(false);
+        return;
+      }
+
+      setTeams(prevTeams =>
+        prevTeams.map(team => ({
+          ...team,
+          isMyVote: team.teamId === selectedTeam.teamId,
+        })),
+      );
+      setIsModalOpen(false);
+    } catch (err) {
+      if (err instanceof HTTPError) {
+        const body = (await err.response.json()) as ApiResponse;
+        setVoteError(body.message ?? DEFAULT_TEAM_VOTE_ERROR_MESSAGE);
+      } else {
+        setVoteError(DEFAULT_TEAM_VOTE_ERROR_MESSAGE);
+      }
+      setIsModalOpen(false);
+    } finally {
+      setIsVoting(false);
+    }
   };
 
   const handleRankingClick = () => {
@@ -50,24 +113,41 @@ const Page = () => {
         <h1 className="text-body1-sb md:text-heading1-sb text-purple-60 mb-5 md:mb-10">
           23RD CEOS PROJECT
         </h1>
-        <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-2 md:mt-3 md:gap-x-3 md:gap-y-3">
-          {idea.map(member => (
-            <Button
-              key={member.name}
-              isSelected={displayMember === member.name}
-              onClick={() => {
-                if (hasVoted) return;
-                setSelectedMember(member.name);
-              }}
-            >
-              {member.name}
-            </Button>
-          ))}
-        </div>
-        {!hasVoted && (
+        {isLoading && (
+          <p className="text-caption2-m md:text-body2-m text-gray-70 mt-6 text-center">
+            데모데이 팀 후보를 불러오는 중입니다.
+          </p>
+        )}
+        {!isLoading && loadError && (
+          <p className="text-caption2-m md:text-body2-m text-point-1 mt-6 text-center">
+            {loadError}
+          </p>
+        )}
+        {!isLoading && !loadError && teams.length > 0 && (
+          <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-2 md:mt-3 md:gap-x-3 md:gap-y-3">
+            {teams.map(team => (
+              <Button
+                key={team.teamId}
+                isSelected={isTeamSelected(team)}
+                onClick={() => {
+                  if (hasVoted) return;
+                  setSelectedTeamId(team.teamId);
+                }}
+              >
+                {team.name}
+              </Button>
+            ))}
+          </div>
+        )}
+        {!hasVoted && !isLoading && !loadError && teams.length > 0 && (
           <div className="mt-10 md:mt-14">
             <CTA label="투표하기" disabled={!isVoteEnabled} onClick={handleVoteClick} />
           </div>
+        )}
+        {voteError && (
+          <p className="text-caption2-m md:text-body2-m text-point-1 mt-3 text-center">
+            {voteError}
+          </p>
         )}
         <button
           type="button"
@@ -83,7 +163,7 @@ const Page = () => {
           title={`투표는 분야별 1회만 가능하며,\n제출 후에는 수정이 어렵습니다.`}
           description="투표하시겠습니까?"
           leftLabel="아니오"
-          rightLabel="예"
+          rightLabel={isVoting ? "투표 중..." : "예"}
           onCancel={handleCancelVote}
           onClose={handleCancelVote}
           onConfirm={handleConfirmVote}
