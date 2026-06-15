@@ -1,17 +1,22 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import Chip from "@/components/common/Chip";
-import { LEADER_CONFIGS, LEADER_PART_TO_API_PART, type LeaderPart } from "@/constants/vote";
+import { isLeaderPart, LEADER_CONFIGS, LEADER_PART_TO_API_PART } from "@/constants/vote";
 import { getCandidateVoteResults } from "@/lib/apis/vote";
 import type { CandidateVoteResult } from "@/types/vote";
 
-const Page = () => {
-  const params = useParams();
+const DEFAULT_CANDIDATE_RESULTS_ERROR_MESSAGE =
+  "파트장 투표 결과를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.";
 
-  const part = params.part as LeaderPart;
+const Page = () => {
+  const params = useParams<{ part: string }>();
+
+  if (!isLeaderPart(params.part)) notFound();
+
+  const part = params.part;
   const apiPart = LEADER_PART_TO_API_PART[part];
   const rankingConfig = LEADER_CONFIGS[part];
 
@@ -25,12 +30,19 @@ const Page = () => {
     getCandidateVoteResults(apiPart)
       .then(res => {
         if (!isMounted) return;
+        if (!res.success) {
+          setCandidates([]);
+          setLoadError(res.message ?? DEFAULT_CANDIDATE_RESULTS_ERROR_MESSAGE);
+          return;
+        }
+
         setCandidates(res.result?.candidates ?? []);
         setLoadError(null);
       })
       .catch(() => {
         if (!isMounted) return;
-        setLoadError("파트장 투표 결과를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+        setCandidates([]);
+        setLoadError(DEFAULT_CANDIDATE_RESULTS_ERROR_MESSAGE);
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);

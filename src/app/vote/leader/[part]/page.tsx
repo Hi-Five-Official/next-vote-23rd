@@ -1,12 +1,12 @@
 "use client";
 import { HTTPError } from "ky";
-import { useParams, useRouter } from "next/navigation";
+import { notFound, useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
 import Modal from "@/components/common/Modal";
-import { LEADER_CONFIGS, LEADER_PART_TO_API_PART, type LeaderPart } from "@/constants/vote";
+import { isLeaderPart, LEADER_CONFIGS, LEADER_PART_TO_API_PART } from "@/constants/vote";
 import { getVotingCandidates } from "@/lib/apis/candidate";
 import { postCandidateVote } from "@/lib/apis/vote";
 import type { VotingCandidate } from "@/types/candidate";
@@ -29,11 +29,24 @@ const getCandidateLoadErrorMessage = async (err: unknown) => {
   }
 };
 
+const getCandidateVoteErrorMessage = async (err: unknown) => {
+  if (!(err instanceof HTTPError)) return DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE;
+
+  try {
+    const body = (await err.response.json()) as ApiResponse;
+    return body.message ?? DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE;
+  } catch {
+    return DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE;
+  }
+};
+
 const Page = () => {
   const router = useRouter();
-  const params = useParams();
+  const params = useParams<{ part: string }>();
 
-  const part = params.part as LeaderPart;
+  if (!isLeaderPart(params.part)) notFound();
+
+  const part = params.part;
   const apiPart = LEADER_PART_TO_API_PART[part];
   const voteConfig = LEADER_CONFIGS[part];
 
@@ -120,12 +133,7 @@ const Page = () => {
       );
       setIsModalOpen(false);
     } catch (err) {
-      if (err instanceof HTTPError) {
-        const body = (await err.response.json()) as ApiResponse;
-        setVoteError(body.message ?? DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE);
-      } else {
-        setVoteError(DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE);
-      }
+      setVoteError(await getCandidateVoteErrorMessage(err));
       setIsModalOpen(false);
     } finally {
       setIsVoting(false);
@@ -133,7 +141,7 @@ const Page = () => {
   };
 
   const handleRankingClick = () => {
-    router.push(`/vote/leader/${part}/ranking`);
+    router.push(voteConfig.rankingHref);
   };
 
   return (
