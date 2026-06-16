@@ -52,6 +52,7 @@ const Page = () => {
 
   const hasVoted = !!serverVotedTeam;
   const isVoteEnabled = selectedTeamId !== null && !hasVoted && !isVoting;
+  const hasTeams = !isLoading && !loadError && teams.length > 0;
 
   const isTeamSelected = (team: VotingTeam) => {
     if (serverVotedTeam) return serverVotedTeam.teamId === team.teamId;
@@ -116,7 +117,7 @@ const Page = () => {
             {loadError}
           </p>
         )}
-        {!isLoading && !loadError && teams.length > 0 && (
+        {hasTeams && (
           <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-2 md:mt-3 md:gap-x-3 md:gap-y-3">
             {teams.map(team => (
               <Button
@@ -132,7 +133,7 @@ const Page = () => {
             ))}
           </div>
         )}
-        {!hasVoted && !isLoading && !loadError && teams.length > 0 && (
+        {!hasVoted && hasTeams && (
           <div className="mt-10 md:mt-14">
             <CTA label="투표하기" disabled={!isVoteEnabled} onClick={handleVoteClick} />
           </div>

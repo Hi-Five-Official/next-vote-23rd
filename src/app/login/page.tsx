@@ -35,6 +35,11 @@ const Page = () => {
 
   const hasValues = usernameValue.trim() !== "" && passwordValue.trim() !== "";
 
+  const clearLoginError = () => {
+    setIsLoginFailed(false);
+    setLoginError(null);
+  };
+
   const onSubmit = async (data: LoginFormValues) => {
     setLoginError(null);
     setIsLoginFailed(false);
@@ -77,12 +82,7 @@ const Page = () => {
                 id="login-id"
                 placeholder="아이디를 입력해주세요"
                 errorMessage={errors.username?.message}
-                {...register("username", {
-                  onChange: () => {
-                    setIsLoginFailed(false);
-                    setLoginError(null);
-                  },
-                })}
+                {...register("username", { onChange: clearLoginError })}
               />
             </div>
           </div>
@@ -96,12 +96,7 @@ const Page = () => {
                 type="password"
                 placeholder="비밀번호를 입력해주세요"
                 errorMessage={errors.password?.message}
-                {...register("password", {
-                  onChange: () => {
-                    setIsLoginFailed(false);
-                    setLoginError(null);
-                  },
-                })}
+                {...register("password", { onChange: clearLoginError })}
               />
               {loginError && (
                 <p className="text-caption2-m md:text-body2-m text-point-1 absolute top-full mt-1">

@@ -78,15 +78,19 @@ const Page = () => {
       });
   }, [teamId, activeTab]);
 
+  const resetFormState = () => {
+    reset();
+    setIdCheckStatus("idle");
+    setEmailCheckStatus("idle");
+  };
+
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     setTeamId(null);
     setTeamName("");
     setName("");
     setCandidateOptions([]);
-    reset();
-    setIdCheckStatus("idle");
-    setEmailCheckStatus("idle");
+    resetFormState();
   };
 
   const handleTeamChange = (value: string) => {
@@ -95,16 +99,12 @@ const Page = () => {
     setTeamName(selected?.label ?? "");
     setName("");
     setCandidateOptions([]);
-    reset();
-    setIdCheckStatus("idle");
-    setEmailCheckStatus("idle");
+    resetFormState();
   };
 
   const handleNameChange = (value: string) => {
     setName(value);
-    reset();
-    setIdCheckStatus("idle");
-    setEmailCheckStatus("idle");
+    resetFormState();
   };
 
   const handleCheckId = async () => {
