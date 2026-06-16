@@ -1,5 +1,4 @@
 "use client";
-import { HTTPError } from "ky";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -14,33 +13,9 @@ import {
 } from "@/constants/vote";
 import { getVotingCandidates } from "@/lib/apis/candidate";
 import { postCandidateVote } from "@/lib/apis/vote";
+import { getHttpErrorMessage } from "@/lib/utils/error";
+import { sortByKoreanName } from "@/lib/utils/sort";
 import type { VotingCandidate } from "@/types/candidate";
-import type { ApiResponse } from "@/types/common";
-
-const sortCandidatesByName = (candidates: VotingCandidate[]) =>
-  [...candidates].sort((a, b) => a.name.localeCompare(b.name, "ko-KR"));
-
-const getCandidateLoadErrorMessage = async (err: unknown) => {
-  if (!(err instanceof HTTPError)) return VOTE_MESSAGES.LEADER_CANDIDATE_LOAD_ERROR;
-
-  try {
-    const body = (await err.response.json()) as ApiResponse;
-    return body.message ?? VOTE_MESSAGES.LEADER_CANDIDATE_LOAD_ERROR;
-  } catch {
-    return VOTE_MESSAGES.LEADER_CANDIDATE_LOAD_ERROR;
-  }
-};
-
-const getCandidateVoteErrorMessage = async (err: unknown) => {
-  if (!(err instanceof HTTPError)) return VOTE_MESSAGES.LEADER_CANDIDATE_VOTE_ERROR;
-
-  try {
-    const body = (await err.response.json()) as ApiResponse;
-    return body.message ?? VOTE_MESSAGES.LEADER_CANDIDATE_VOTE_ERROR;
-  } catch {
-    return VOTE_MESSAGES.LEADER_CANDIDATE_VOTE_ERROR;
-  }
-};
 
 const Page = () => {
   const router = useRouter();
@@ -67,13 +42,13 @@ const Page = () => {
       .then(res => {
         if (!isMounted) return;
         setSelectedCandidateId(null);
-        setCandidates(sortCandidatesByName(res.result?.candidates ?? []));
+        setCandidates(sortByKoreanName(res.result?.candidates ?? []));
         setLoadError(null);
       })
       .catch(async err => {
         if (!isMounted) return;
         setCandidates([]);
-        setLoadError(await getCandidateLoadErrorMessage(err));
+        setLoadError(await getHttpErrorMessage(err, VOTE_MESSAGES.LEADER_CANDIDATE_LOAD_ERROR));
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -135,7 +110,7 @@ const Page = () => {
       );
       setIsModalOpen(false);
     } catch (err) {
-      setVoteError(await getCandidateVoteErrorMessage(err));
+      setVoteError(await getHttpErrorMessage(err, VOTE_MESSAGES.LEADER_CANDIDATE_VOTE_ERROR));
       setIsModalOpen(false);
     } finally {
       setIsVoting(false);

@@ -29,7 +29,7 @@ const Modal = (props: ModalProps) => {
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [props]);
+  }, [props.onClose]);
 
   return (
     <div

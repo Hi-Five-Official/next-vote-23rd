@@ -6,6 +6,7 @@ import ProfileCard from "@/components/common/ProfileCard";
 import TabToggle from "@/components/common/TabToggle";
 import { TABS } from "@/constants/signup";
 import { getVotingCandidates } from "@/lib/apis/candidate";
+import { sortByKoreanName } from "@/lib/utils/sort";
 import type { Part } from "@/types/team";
 
 type MemberProfile = {
@@ -20,9 +21,6 @@ const PARTS: Part[] = ["FE", "BE"];
 const INITIAL_MEMBERS: MembersByPart = { FE: [], BE: [] };
 const DEFAULT_MEMBER_LOAD_ERROR_MESSAGE =
   "멤버 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.";
-
-const sortMembersByName = (members: MemberProfile[]) =>
-  [...members].sort((a, b) => a.name.localeCompare(b.name, "ko-KR"));
 
 const isAbortError = (err: unknown) => err instanceof DOMException && err.name === "AbortError";
 
@@ -40,7 +38,7 @@ const Page = () => {
 
       for (const part of PARTS) {
         const res = await getVotingCandidates(part);
-        nextMembers[part] = sortMembersByName(
+        nextMembers[part] = sortByKoreanName(
           (res.result?.candidates ?? []).map(c => ({
             candidateId: c.candidateId,
             name: c.name,

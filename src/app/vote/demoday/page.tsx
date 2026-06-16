@@ -1,6 +1,5 @@
 "use client";
 
-import { HTTPError } from "ky";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
@@ -10,7 +9,7 @@ import Modal from "@/components/common/Modal";
 import { VOTE_MESSAGES } from "@/constants/vote";
 import { getVotingTeams } from "@/lib/apis/team";
 import { postTeamVote } from "@/lib/apis/vote";
-import type { ApiResponse } from "@/types/common";
+import { getHttpErrorMessage } from "@/lib/utils/error";
 import type { VotingTeam } from "@/types/team";
 
 const Page = () => {
@@ -90,12 +89,7 @@ const Page = () => {
       );
       setIsModalOpen(false);
     } catch (err) {
-      if (err instanceof HTTPError) {
-        const body = (await err.response.json()) as ApiResponse;
-        setVoteError(body.message ?? VOTE_MESSAGES.DEMODAY_TEAM_VOTE_ERROR);
-      } else {
-        setVoteError(VOTE_MESSAGES.DEMODAY_TEAM_VOTE_ERROR);
-      }
+      setVoteError(await getHttpErrorMessage(err, VOTE_MESSAGES.DEMODAY_TEAM_VOTE_ERROR));
       setIsModalOpen(false);
     } finally {
       setIsVoting(false);
