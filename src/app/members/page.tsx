@@ -5,13 +5,13 @@ import { useEffect, useState } from "react";
 import ProfileCard from "@/components/common/ProfileCard";
 import TabToggle from "@/components/common/TabToggle";
 import { TABS } from "@/constants/signup";
-import { getTeamCandidates, getTeams } from "@/lib/apis/team";
-import type { Part, Team } from "@/types/team";
+import { getVotingCandidates } from "@/lib/apis/candidate";
+import type { Part } from "@/types/team";
 
 type MemberProfile = {
   candidateId: number;
   name: string;
-  team: string;
+  university: string;
 };
 
 type MembersByPart = Record<Part, MemberProfile[]>;
@@ -26,31 +26,6 @@ const sortMembersByName = (members: MemberProfile[]) =>
 
 const isAbortError = (err: unknown) => err instanceof DOMException && err.name === "AbortError";
 
-const getMembersByPart = async (teams: Team[], signal: AbortSignal): Promise<MembersByPart> => {
-  const nextMembers: MembersByPart = { FE: [], BE: [] };
-
-  for (const part of PARTS) {
-    const members: MemberProfile[] = [];
-
-    for (const team of teams) {
-      signal.throwIfAborted();
-
-      const candidatesResponse = await getTeamCandidates(team.teamId, part, { signal });
-      members.push(
-        ...(candidatesResponse.result?.candidates ?? []).map(candidate => ({
-          candidateId: candidate.candidateId,
-          name: candidate.name,
-          team: team.name,
-        })),
-      );
-    }
-
-    nextMembers[part] = sortMembersByName(members);
-  }
-
-  return nextMembers;
-};
-
 const Page = () => {
   const [selectedTab, setSelectedTab] = useState<Part>("FE");
   const [membersByPart, setMembersByPart] = useState<MembersByPart>(INITIAL_MEMBERS);
@@ -58,18 +33,28 @@ const Page = () => {
   const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
-    const controller = new AbortController();
     let isMounted = true;
 
-    getTeams({ signal: controller.signal })
-      .then(async res => {
+    const fetchAll = async () => {
+      const nextMembers: MembersByPart = { FE: [], BE: [] };
+
+      for (const part of PARTS) {
+        const res = await getVotingCandidates(part);
+        nextMembers[part] = sortMembersByName(
+          (res.result?.candidates ?? []).map(c => ({
+            candidateId: c.candidateId,
+            name: c.name,
+            university: c.university,
+          })),
+        );
+      }
+
+      return nextMembers;
+    };
+
+    fetchAll()
+      .then(nextMembers => {
         if (!isMounted) return;
-
-        const teams = res.result?.teams ?? [];
-        const nextMembers = await getMembersByPart(teams, controller.signal);
-
-        if (!isMounted) return;
-
         setLoadError(null);
         setMembersByPart(nextMembers);
       })
@@ -84,7 +69,6 @@ const Page = () => {
 
     return () => {
       isMounted = false;
-      controller.abort();
     };
   }, []);
 
@@ -104,7 +88,7 @@ const Page = () => {
             <ProfileCard
               key={`${selectedTab}-${member.candidateId}`}
               name={member.name}
-              team={member.team}
+              university={member.university}
             />
           ))}
         </div>
