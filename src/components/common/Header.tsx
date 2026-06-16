@@ -89,7 +89,10 @@ const Header = () => {
               key={href}
               type="button"
               onClick={() => handleNavClick(href, requireAuth)}
-              className={`text-heading1-sb hover:text-purple-60 cursor-pointer transition-colors ${pathname === href ? "text-purple-60" : "text-black"}`}
+              className={cn(
+                "text-heading1-sb hover:text-purple-60 cursor-pointer transition-colors",
+                pathname === href ? "text-purple-60" : "text-black",
+              )}
             >
               {label}
             </button>
@@ -105,7 +108,10 @@ const Header = () => {
           ) : (
             <Link
               href="/login"
-              className={`text-heading1-sb hover:text-purple-60 transition-colors ${pathname === "/login" ? "text-purple-60" : "text-black"}`}
+              className={cn(
+                "text-heading1-sb hover:text-purple-60 cursor-pointer transition-colors",
+                pathname === "/login" ? "text-purple-60" : "text-black",
+              )}
             >
               Login
             </Link>

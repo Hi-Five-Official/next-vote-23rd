@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import Chip from "@/components/common/Chip";
+import { VOTE_MESSAGES } from "@/constants/vote";
 import { getTeamVoteResults } from "@/lib/apis/vote";
 import type { TeamVoteResult } from "@/types/vote";
 
@@ -22,7 +23,7 @@ const Page = () => {
       })
       .catch(() => {
         if (!isMounted) return;
-        setLoadError("데모데이 투표 결과를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+        setLoadError(VOTE_MESSAGES.DEMODAY_RANKING_LOAD_ERROR);
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -52,7 +53,7 @@ const Page = () => {
         </h1>
         {isLoading && (
           <p className="text-caption2-m md:text-body2-m text-gray-70 mt-6 text-center">
-            데모데이 투표 결과를 불러오는 중입니다.
+            {VOTE_MESSAGES.DEMODAY_RANKING_LOADING}
           </p>
         )}
         {!isLoading && loadError && (

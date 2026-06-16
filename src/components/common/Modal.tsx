@@ -23,13 +23,14 @@ interface DoubleButtonModalProps extends BaseModalProps {
 type ModalProps = SingleButtonModalProps | DoubleButtonModalProps;
 
 const Modal = (props: ModalProps) => {
+  const { onClose } = props;
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") props.onClose?.();
+      if (e.key === "Escape") onClose?.();
     };
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [props]);
+  }, [onClose]);
 
   return (
     <div

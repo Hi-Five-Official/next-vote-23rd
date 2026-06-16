@@ -1,44 +1,21 @@
 "use client";
-import { HTTPError } from "ky";
 import { notFound, useParams, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
 import Modal from "@/components/common/Modal";
-import { isLeaderPart, LEADER_CONFIGS, LEADER_PART_TO_API_PART } from "@/constants/vote";
+import {
+  isLeaderPart,
+  LEADER_CONFIGS,
+  LEADER_PART_TO_API_PART,
+  VOTE_MESSAGES,
+} from "@/constants/vote";
 import { getVotingCandidates } from "@/lib/apis/candidate";
 import { postCandidateVote } from "@/lib/apis/vote";
+import { getHttpErrorMessage } from "@/lib/utils/error";
+import { sortByKoreanName } from "@/lib/utils/sort";
 import type { VotingCandidate } from "@/types/candidate";
-import type { ApiResponse } from "@/types/common";
-
-const DEFAULT_CANDIDATE_LOAD_ERROR_MESSAGE = "파트장 후보 목록을 불러오지 못했습니다.";
-const DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE = "투표에 실패했습니다. 잠시 후 다시 시도해주세요.";
-
-const sortCandidatesByName = (candidates: VotingCandidate[]) =>
-  [...candidates].sort((a, b) => a.name.localeCompare(b.name, "ko-KR"));
-
-const getCandidateLoadErrorMessage = async (err: unknown) => {
-  if (!(err instanceof HTTPError)) return DEFAULT_CANDIDATE_LOAD_ERROR_MESSAGE;
-
-  try {
-    const body = (await err.response.json()) as ApiResponse;
-    return body.message ?? DEFAULT_CANDIDATE_LOAD_ERROR_MESSAGE;
-  } catch {
-    return DEFAULT_CANDIDATE_LOAD_ERROR_MESSAGE;
-  }
-};
-
-const getCandidateVoteErrorMessage = async (err: unknown) => {
-  if (!(err instanceof HTTPError)) return DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE;
-
-  try {
-    const body = (await err.response.json()) as ApiResponse;
-    return body.message ?? DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE;
-  } catch {
-    return DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE;
-  }
-};
 
 const Page = () => {
   const router = useRouter();
@@ -65,13 +42,13 @@ const Page = () => {
       .then(res => {
         if (!isMounted) return;
         setSelectedCandidateId(null);
-        setCandidates(sortCandidatesByName(res.result?.candidates ?? []));
+        setCandidates(sortByKoreanName(res.result?.candidates ?? []));
         setLoadError(null);
       })
       .catch(async err => {
         if (!isMounted) return;
         setCandidates([]);
-        setLoadError(await getCandidateLoadErrorMessage(err));
+        setLoadError(await getHttpErrorMessage(err, VOTE_MESSAGES.LEADER_CANDIDATE_LOAD_ERROR));
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -120,7 +97,7 @@ const Page = () => {
     try {
       const response = await postCandidateVote({ candidateId: selectedCandidate.candidateId });
       if (!response.success) {
-        setVoteError(response.message ?? DEFAULT_CANDIDATE_VOTE_ERROR_MESSAGE);
+        setVoteError(response.message ?? VOTE_MESSAGES.LEADER_CANDIDATE_VOTE_ERROR);
         setIsModalOpen(false);
         return;
       }
@@ -133,7 +110,7 @@ const Page = () => {
       );
       setIsModalOpen(false);
     } catch (err) {
-      setVoteError(await getCandidateVoteErrorMessage(err));
+      setVoteError(await getHttpErrorMessage(err, VOTE_MESSAGES.LEADER_CANDIDATE_VOTE_ERROR));
       setIsModalOpen(false);
     } finally {
       setIsVoting(false);
@@ -152,7 +129,7 @@ const Page = () => {
         </h1>
         {isLoading && (
           <p className="text-caption2-m md:text-body2-m text-gray-70 mt-6 text-center">
-            파트장 후보를 불러오는 중입니다.
+            {VOTE_MESSAGES.LEADER_CANDIDATE_LOADING}
           </p>
         )}
         {!isLoading && loadError && (
