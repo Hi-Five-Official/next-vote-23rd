@@ -4,12 +4,12 @@ export const LEADER_CONFIGS = {
   frontend: {
     title: "23RD FRONT-END",
     rankingTitle: "현재 프론트엔드 파트장 투표 순위",
-    rankingHref: "/vote/leader/frontend/ranking",
+    rankingHref: "/vote/frontend/ranking",
   },
   backend: {
     title: "23RD BACK-END",
     rankingTitle: "현재 백엔드 파트장 투표 순위",
-    rankingHref: "/vote/leader/backend/ranking",
+    rankingHref: "/vote/backend/ranking",
   },
 } as const;
 
@@ -24,8 +24,8 @@ export const LEADER_PART_TO_API_PART: Record<LeaderPart, Part> = {
 };
 
 export const VOTE_BUTTONS = [
-  { label: "프론트엔드 파트장", href: "/vote/leader/frontend" },
-  { label: "백엔드 파트장", href: "/vote/leader/backend" },
+  { label: "프론트엔드 파트장", href: "/vote/frontend" },
+  { label: "백엔드 파트장", href: "/vote/backend" },
 ] as const;
 
 export const VOTE_MESSAGES = {
