@@ -4,12 +4,14 @@ import { notFound, useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 import Chip from "@/components/common/Chip";
-import { isLeaderPart, LEADER_CONFIGS, LEADER_PART_TO_API_PART } from "@/constants/vote";
+import {
+  isLeaderPart,
+  LEADER_CONFIGS,
+  LEADER_PART_TO_API_PART,
+  VOTE_MESSAGES,
+} from "@/constants/vote";
 import { getCandidateVoteResults } from "@/lib/apis/vote";
 import type { CandidateVoteResult } from "@/types/vote";
-
-const DEFAULT_CANDIDATE_RESULTS_ERROR_MESSAGE =
-  "파트장 투표 결과를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.";
 
 const Page = () => {
   const params = useParams<{ part: string }>();
@@ -32,7 +34,7 @@ const Page = () => {
         if (!isMounted) return;
         if (!res.success) {
           setCandidates([]);
-          setLoadError(res.message ?? DEFAULT_CANDIDATE_RESULTS_ERROR_MESSAGE);
+          setLoadError(res.message ?? VOTE_MESSAGES.LEADER_RANKING_LOAD_ERROR);
           return;
         }
 
@@ -42,7 +44,7 @@ const Page = () => {
       .catch(() => {
         if (!isMounted) return;
         setCandidates([]);
-        setLoadError(DEFAULT_CANDIDATE_RESULTS_ERROR_MESSAGE);
+        setLoadError(VOTE_MESSAGES.LEADER_RANKING_LOAD_ERROR);
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -72,7 +74,7 @@ const Page = () => {
         </h1>
         {isLoading && (
           <p className="text-caption2-m md:text-body2-m text-gray-70 mt-6 text-center">
-            파트장 투표 결과를 불러오는 중입니다.
+            {VOTE_MESSAGES.LEADER_RANKING_LOADING}
           </p>
         )}
         {!isLoading && loadError && (

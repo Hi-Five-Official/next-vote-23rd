@@ -7,12 +7,11 @@ import { useEffect, useMemo, useState } from "react";
 import Button from "@/components/common/Button";
 import CTA from "@/components/common/CTA";
 import Modal from "@/components/common/Modal";
+import { VOTE_MESSAGES } from "@/constants/vote";
 import { getVotingTeams } from "@/lib/apis/team";
 import { postTeamVote } from "@/lib/apis/vote";
 import type { ApiResponse } from "@/types/common";
 import type { VotingTeam } from "@/types/team";
-
-const DEFAULT_TEAM_VOTE_ERROR_MESSAGE = "투표에 실패했습니다. 잠시 후 다시 시도해주세요.";
 
 const Page = () => {
   const router = useRouter();
@@ -35,7 +34,7 @@ const Page = () => {
       })
       .catch(() => {
         if (!isMounted) return;
-        setLoadError("데모데이 팀 후보 목록을 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
+        setLoadError(VOTE_MESSAGES.DEMODAY_TEAM_LOAD_ERROR);
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -78,7 +77,7 @@ const Page = () => {
     try {
       const response = await postTeamVote({ teamId: selectedTeam.teamId });
       if (!response.success) {
-        setVoteError(response.message ?? DEFAULT_TEAM_VOTE_ERROR_MESSAGE);
+        setVoteError(response.message ?? VOTE_MESSAGES.DEMODAY_TEAM_VOTE_ERROR);
         setIsModalOpen(false);
         return;
       }
@@ -93,9 +92,9 @@ const Page = () => {
     } catch (err) {
       if (err instanceof HTTPError) {
         const body = (await err.response.json()) as ApiResponse;
-        setVoteError(body.message ?? DEFAULT_TEAM_VOTE_ERROR_MESSAGE);
+        setVoteError(body.message ?? VOTE_MESSAGES.DEMODAY_TEAM_VOTE_ERROR);
       } else {
-        setVoteError(DEFAULT_TEAM_VOTE_ERROR_MESSAGE);
+        setVoteError(VOTE_MESSAGES.DEMODAY_TEAM_VOTE_ERROR);
       }
       setIsModalOpen(false);
     } finally {
@@ -115,7 +114,7 @@ const Page = () => {
         </h1>
         {isLoading && (
           <p className="text-caption2-m md:text-body2-m text-gray-70 mt-6 text-center">
-            데모데이 팀 후보를 불러오는 중입니다.
+            {VOTE_MESSAGES.DEMODAY_TEAM_LOADING}
           </p>
         )}
         {!isLoading && loadError && (
