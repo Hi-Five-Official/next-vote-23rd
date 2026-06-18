@@ -88,7 +88,7 @@ const Header = () => {
         <Modal
           buttons="double"
           title="로그아웃 하시겠습니까?"
-          description={`로그아웃 후에는 다시 로그인해야\n서비스를 이용할 수 있습니다.`}
+          description={`로그아웃 후에는 다시 로그인하셔야\n서비스를 이용하실 수 있습니다.`}
           onConfirm={confirmLogout}
           onCancel={() => setLogoutModalOpen(false)}
           onClose={() => setLogoutModalOpen(false)}

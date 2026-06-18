@@ -56,7 +56,7 @@ const Page = () => {
       {modalOpen && (
         <Modal
           buttons="double"
-          title="로그인하시겠습니까?"
+          title="로그인 하시겠습니까?"
           description="로그인이 필요한 서비스입니다."
           onConfirm={() => router.push("/login")}
           onCancel={() => setModalOpen(false)}
