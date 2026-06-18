@@ -3,6 +3,7 @@ import type { Part } from "@/types/team";
 import type {
   GetCandidateVoteResultsResponse,
   GetTeamVoteResultsResponse,
+  GetVoteCountResponse,
   PostCandidateVoteRequest,
   PostCandidateVoteResponse,
   PostTeamVoteRequest,
@@ -35,4 +36,9 @@ export const getCandidateVoteResults = async (
   return (await api
     .get("/api/v1/votes/candidates/results", { searchParams: { part } })
     .json()) as GetCandidateVoteResultsResponse;
+};
+
+// 총 투표 수 조회
+export const getVoteCount = async (): Promise<GetVoteCountResponse> => {
+  return (await api.get("/api/v1/votes/count").json()) as GetVoteCountResponse;
 };

@@ -8,8 +8,8 @@ import CTA from "@/components/common/CTA";
 import Modal from "@/components/common/Modal";
 import BackgroundGraphic from "@/components/home/BackgroundGraphic";
 import { VOTE_CATEGORIES } from "@/constants/home";
+import { getVoteCount } from "@/lib/apis/vote";
 import { getCookieToken } from "@/lib/utils/cookie";
-import { getTotalVoteCount } from "@/lib/utils/vote";
 
 const Page = () => {
   const router = useRouter();
@@ -17,8 +17,8 @@ const Page = () => {
   const [totalVoteCount, setTotalVoteCount] = useState<number | null>(null);
 
   useEffect(() => {
-    getTotalVoteCount()
-      .then(setTotalVoteCount)
+    getVoteCount()
+      .then(res => setTotalVoteCount(res.result?.totalCount ?? null))
       .catch(() => {});
   }, []);
 

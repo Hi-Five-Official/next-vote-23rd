@@ -35,3 +35,6 @@ export type CandidateVoteResult = {
 export type GetCandidateVoteResultsResponse = ApiResponse<{
   candidates: CandidateVoteResult[];
 }>;
+
+// 총 투표 수 조회 response
+export type GetVoteCountResponse = ApiResponse<{ totalCount: number }>;
