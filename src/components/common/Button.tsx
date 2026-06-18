@@ -36,6 +36,7 @@ const Button = ({
       type="button"
       disabled={disabled}
       onClick={onClick}
+      aria-pressed={variant === "default" ? isSelected : undefined}
       className={cn(
         styles.base,
         variant === "default" && (isSelected ? styles.selected : styles.unselected),
