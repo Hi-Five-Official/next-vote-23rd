@@ -44,7 +44,7 @@ const Modal = (props: ModalProps) => {
         <div className="flex flex-col items-center gap-2 px-6 py-12 text-center md:gap-3">
           <p className="text-heading2-sb whitespace-pre-line text-black">{props.title}</p>
           {props.description && (
-            <p className="text-heading3-sb text-gray-80">{props.description}</p>
+            <p className="text-heading3-sb text-gray-80 whitespace-pre-line">{props.description}</p>
           )}
         </div>
         <div className="flex">

@@ -35,6 +35,7 @@ const Header = () => {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loginModalOpen, setLoginModalOpen] = useState(false);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
   const isLoggedIn = useSyncExternalStore(subscribeAuth, getAuthSnapshot, getAuthServerSnapshot);
 
   useEffect(() => {
@@ -54,13 +55,17 @@ const Header = () => {
     }
   };
 
-  const handleLogout = async () => {
+  const handleLogout = () => {
+    setSidebarOpen(false);
+    setLogoutModalOpen(true);
+  };
+
+  const confirmLogout = async () => {
     try {
       await postLogout();
     } finally {
       await deleteAuthCookie();
-      dispatchAuthChange();
-      alert("로그아웃 되었습니다!");
+      window.location.href = "/";
     }
   };
 
@@ -77,6 +82,16 @@ const Header = () => {
           }}
           onCancel={() => setLoginModalOpen(false)}
           onClose={() => setLoginModalOpen(false)}
+        />
+      )}
+      {logoutModalOpen && (
+        <Modal
+          buttons="double"
+          title="로그아웃 하시겠습니까?"
+          description={`로그아웃 후에는 다시 로그인해야\n서비스를 이용할 수 있습니다.`}
+          onConfirm={confirmLogout}
+          onCancel={() => setLogoutModalOpen(false)}
+          onClose={() => setLogoutModalOpen(false)}
         />
       )}
       <header className="bg-gray-10 z-header relative flex h-16 shrink-0 items-center justify-between px-6">
@@ -164,10 +179,7 @@ const Header = () => {
           {isLoggedIn ? (
             <button
               type="button"
-              onClick={() => {
-                handleLogout();
-                setSidebarOpen(false);
-              }}
+              onClick={handleLogout}
               className="text-heading1-sb hover:text-purple-60 cursor-pointer text-black transition-colors"
             >
               Logout
