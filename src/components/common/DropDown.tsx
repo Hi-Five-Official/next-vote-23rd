@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import ChevronDownIcon from "@/assets/icons/icon_chevron_down_regular.svg";
 import { cn } from "@/lib/utils/cn";
@@ -29,6 +29,7 @@ const DropDown = ({
 }: DropDownProps) => {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const listId = useId();
 
   const selected = options.find(o => o.value === value);
 
@@ -46,6 +47,9 @@ const DropDown = ({
     <div ref={ref} className="relative w-full">
       <button
         type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-controls={listId}
         onClick={() => {
           if (disabled) {
             onDisabledClick?.();
@@ -57,13 +61,19 @@ const DropDown = ({
       >
         <span>{selected ? selected.label : placeholder}</span>
         <ChevronDownIcon
+          aria-hidden="true"
           className={cn("size-6 transition-transform duration-200", open && "rotate-180")}
         />
       </button>
       {open && (
-        <ul className="z-dropdown absolute top-full left-0 mt-1 w-full overflow-hidden border border-purple-50 bg-white shadow-sm">
+        <ul
+          id={listId}
+          role="listbox"
+          aria-label={placeholder}
+          className="z-dropdown absolute top-full left-0 mt-1 w-full overflow-hidden border border-purple-50 bg-white shadow-sm"
+        >
           {options.map(option => (
-            <li key={option.value}>
+            <li key={option.value} role="option" aria-selected={option.value === value}>
               <button
                 type="button"
                 onClick={() => {

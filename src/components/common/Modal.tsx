@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useId } from "react";
 
 interface BaseModalProps {
   title: string;
@@ -24,6 +24,9 @@ type ModalProps = SingleButtonModalProps | DoubleButtonModalProps;
 
 const Modal = (props: ModalProps) => {
   const { onClose } = props;
+  const titleId = useId();
+  const descId = useId();
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose?.();
@@ -36,15 +39,25 @@ const Modal = (props: ModalProps) => {
     <div
       className="z-modal fixed inset-0 flex items-center justify-center bg-black/60"
       onClick={props.onClose}
+      aria-hidden="true"
     >
       <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        aria-describedby={props.description ? descId : undefined}
         className="w-80 overflow-hidden rounded-2xl bg-white shadow-lg md:w-100"
         onClick={e => e.stopPropagation()}
+        aria-hidden="false"
       >
         <div className="flex flex-col items-center gap-2 px-6 py-12 text-center md:gap-3">
-          <p className="text-heading2-sb whitespace-pre-line text-black">{props.title}</p>
+          <p id={titleId} className="text-heading2-sb whitespace-pre-line text-black">
+            {props.title}
+          </p>
           {props.description && (
-            <p className="text-heading3-sb text-gray-80">{props.description}</p>
+            <p id={descId} className="text-heading3-sb text-gray-80 whitespace-pre-line">
+              {props.description}
+            </p>
           )}
         </div>
         <div className="flex">

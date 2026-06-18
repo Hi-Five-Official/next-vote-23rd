@@ -1,5 +1,6 @@
 import ky from "ky";
 
+import { deleteAuthCookie } from "@/app/actions/auth";
 import { getCookieToken } from "@/lib/utils/cookie";
 import type { RefreshTokenResponse } from "@/types/auth";
 import { ERROR_CODE } from "@/types/errorCode";
@@ -11,6 +12,12 @@ export const setAccessToken = (token: string | null) => {
 };
 
 export const getAccessToken = () => accessToken;
+
+const redirectToLogin = async () => {
+  await deleteAuthCookie();
+  setAccessToken(null);
+  window.location.href = "/login";
+};
 
 // 토큰 재발급
 const postRefreshToken = async (): Promise<string> => {
@@ -47,15 +54,18 @@ const api = ky.create({
         if (response.status !== 401 || retryCount > 0) return;
 
         const body = (await response.clone().json()) as { code?: string };
-        if (body.code !== ERROR_CODE.AUTH_401_04) return;
 
-        try {
-          const newToken = await postRefreshToken();
-          const headers = new Headers(request.headers);
-          headers.set("Authorization", `Bearer ${newToken}`);
-          return ky.retry({ request: new Request(request, { headers }) });
-        } catch {
-          setAccessToken(null);
+        if (body.code === ERROR_CODE.AUTH_401_04) {
+          try {
+            const newToken = await postRefreshToken();
+            const headers = new Headers(request.headers);
+            headers.set("Authorization", `Bearer ${newToken}`);
+            return ky.retry({ request: new Request(request, { headers }) });
+          } catch {
+            await redirectToLogin();
+          }
+        } else {
+          await redirectToLogin();
         }
       },
     ],

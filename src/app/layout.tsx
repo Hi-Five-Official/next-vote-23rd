@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import Header from "@/components/common/Header";
 
 export const metadata: Metadata = {
-  title: "CEOS 23rd Vote",
+  title: "Ditda Vote",
   description: "CEOS 23rd Vote by Ditda",
 };
 
