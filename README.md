@@ -1,90 +1,156 @@
-# next-vote-23rd
+# Ditda Vote <img src="src/app/icon.svg" alt="Ditda Vote" width="40" align="left" />
 
-## **서론**
+> CEOS 23기 7~9주차 프론트엔드·백엔드 협업 과제 **Next-Vote**의 프론트엔드 레포지토리입니다. <br />
+> 회원가입·로그인부터 파트장·데모데이 투표, 실시간 순위 결과 확인까지 한 흐름으로 이어지는 투표 서비스를 구현했습니다.
 
-안녕하세요! 프론트엔드 운영진 원채영입니다. 🍀
+🔗 [배포 링크](https://crossbizz.cloud/) &nbsp;|&nbsp; 🎨 [Figma](https://www.figma.com/design/axmymu1aC95PifVE4u7aQ6/Ditda-Vote?node-id=0-1&m=dev) &nbsp;|&nbsp; 📄 [API 명세서](https://documenter.getpostman.com/view/54737459/2sBXqNnyxC) &nbsp;|&nbsp; 📘 [Swagger UI](https://api.crossbizz.cloud/swagger-ui/index.html#/)
 
-벌써 마지막 과제에 도달했네요. 이번 스터디의 마지막 과제는 특별히 **백엔드 팀원들과 함께하는 협업 과제**로 준비했습니다!
+## ✨ 주요 기능
 
-현대 웹 개발에서는 REST API 기반의 데이터 통신이 핵심이 되면서, 프론트엔드와 백엔드 간의 협업이 더욱 중요해지고 있습니다. 백엔드는 API를 통해 데이터를 제공하고, 프론트엔드는 이를 바탕으로 사용자 경험을 구현합니다. 따라서 API를 이해하고 활용하는 능력, 그리고 백엔드 개발자와 원활하게 소통하는 경험은 프론트엔드 개발자에게 꼭 필요한 역량입니다.
+### 🔐 Onboarding
 
-이번 과제는 앞으로 진행될 팀 프로젝트에 앞서, 실제 협업 방식을 미리 경험해보는 연습 과정이라고 생각해주시면 좋을 것 같습니다. Next.js를 활용해 **투표 기능이 포함된 애플리케이션**을 제작하며, 백엔드와의 소통 방식, 역할 분담, 데이터 흐름 등을 직접 경험해보세요!
+- 아이디·이메일 실시간 중복 확인을 포함한 단계별 회원가입 플로우
+- JWT 기반 로그인 / 로그아웃 (Access Token 인메모리 관리 + Refresh Token 자동 갱신)
+- 로그아웃 확인 모달로 실수 방지
+- 미인증 상태로 보호된 페이지 접근 시 로그인 유도 모달
 
-이번 과제를 통해 단순히 기능 구현을 넘어, 함께 서비스를 만들어가는 협업 경험까지 얻어가셨으면 좋겠습니다.
+### 🗳 Vote
 
-여러분의 멋진 결과물을 기대하겠습니다. 마지막 과제까지 모두 화이팅입니다! 🔥
+- **홈 화면** — 투표 분야 안내 및 실시간 총 투표 수 집계 표시
+- **프론트엔드 파트장 투표** — FE 후보자 목록을 가나다순으로 정렬해 표시, 선택 후 제출
+- **백엔드 파트장 투표** — BE 후보자 목록을 가나다순으로 정렬해 표시, 선택 후 제출
+- **데모데이 투표** — 팀 목록 조회 및 투표
+- 분야별 1회 투표 제한, 제출 확인 모달로 실수 투표 방지
+- 투표 완료 후 실시간 순위 결과 페이지로 이동
 
----
+### 👥 Members
 
-## **과제**
+- FE / BE 탭 전환으로 CEOS 23기 멤버 프로필(이름·소속 대학교) 카드 목록 조회
+- 멤버 데이터 가나다순 정렬
 
-### **목표**
+### 🙌 Contributors
 
-- REST API를 활용하여 서버와의 통신 방식을 이해합니다.
-- JavaScript의 비동기 처리 방식(`async/await`, Promise)을 익힙니다.
-- API 문서를 바탕으로 백엔드와 소통하는 방법을 학습합니다.
-- 팀 내 협업을 통해 효율적인 역할 분담을 고민하고 적용합니다.
+- 서비스를 개발한 Ditda 팀원의 GitHub 프로필 카드 목록
+- 카드 클릭 시 팀원 GitHub 프로필로 이동
 
----
+## 🛠️ 기술 스택
 
-### **기한**
+| 구분        | 기술                                                                                                                                                                                                                             | 선택 이유                                                                                                                                  |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Framework   | <img src="https://img.shields.io/badge/Next.js 16-000000.svg?style=for-the-badge&logo=nextdotjs&logoColor=white" height="28"/>                                                                                                   | App Router 기반 페이지 구성. 개발 환경 Turbopack으로 빠른 HMR 확보. Next.js Middleware로 미인증 사용자 접근을 서버 사이드에서 일괄 차단    |
+| Language    | <img src="https://img.shields.io/badge/TypeScript 5-3178C6.svg?style=for-the-badge&logo=typescript&logoColor=white" height="28"/>                                                                                                | API 응답 타입을 정의해 런타임 오류 없는 안전한 데이터 처리. 복잡한 투표·후보자 타입을 명확한 인터페이스로 관리                             |
+| Styling     | <img src="https://img.shields.io/badge/Tailwind CSS 4-06B6D4.svg?style=for-the-badge&logo=tailwindcss&logoColor=white" height="28"/>                                                                                             | 별도 CSS 파일 없이 유틸리티 클래스로 디자인 반영. `clsx` + `tailwind-merge`를 묶은 `cn` 유틸로 조건부 클래스 충돌 방지                     |
+| Form        | <img src="https://img.shields.io/badge/React Hook Form-EC5990.svg?style=for-the-badge&logo=reacthookform&logoColor=white" height="28"/> <img src="https://img.shields.io/badge/Zod-3E67B1.svg?style=for-the-badge" height="28"/> | 아이디·이메일 중복 확인을 포함한 복잡한 회원가입 폼의 유효성 검사를 선언적으로 처리. Zod 스키마로 타입과 검증 로직을 한 곳에서 관리        |
+| HTTP Client | <img src="https://img.shields.io/badge/ky-F7DF1E.svg?style=for-the-badge" height="28"/>                                                                                                                                          | `beforeRequest` / `afterResponse` 훅으로 토큰 주입·401 자동 갱신·리다이렉트를 인터셉터 한 곳에서 처리. fetch 기반이라 번들 오버헤드 최소화 |
+| Compiler    | <img src="https://img.shields.io/badge/React Compiler-20232A.svg?style=for-the-badge&logo=react&logoColor=61DAFB" height="28"/>                                                                                                  | 컴파일 타임 자동 메모이제이션으로 `useMemo`·`useCallback` 수동 작성 부담 제거                                                              |
+| SVG         | <img src="https://img.shields.io/badge/SVGR-2E2E2E.svg?style=for-the-badge" height="28"/>                                                                                                                                        | SVG를 React 컴포넌트로 변환해 `className`으로 크기·색상 자유 제어. Turbopack rules에서 `*.svg` import 자동 처리                            |
+| Linting     | <img src="https://img.shields.io/badge/ESLint 9-4B32C3.svg?style=for-the-badge&logo=eslint&logoColor=white" height="28"/>                                                                                                        | `eslint-config-next`로 Next.js 이미지 최적화·Link 규칙 자동 검사. `simple-import-sort`로 import 순서 일관성 유지                           |
+| Formatting  | <img src="https://img.shields.io/badge/Prettier 3-1A2B34.svg?style=for-the-badge&logo=prettier&logoColor=F7B93E" height="28"/>                                                                                                   | `prettier-plugin-tailwindcss`로 Tailwind 클래스 선언 순서를 권장 순서로 자동 정렬해 리뷰 노이즈 제거                                       |
+| Git Hooks   | <img src="https://img.shields.io/badge/Husky-2E2E2E.svg?style=for-the-badge" height="28"/> <img src="https://img.shields.io/badge/lint--staged-4B5563.svg?style=for-the-badge" height="28"/>                                     | 전체 파일이 아닌 staged 파일에만 lint·format 실행해 커밋 속도 유지. 코드 품질 기준 자동 통일                                               |
+| Package     | <img src="https://img.shields.io/badge/yarn-2C8EBB.svg?style=for-the-badge&logo=yarn&logoColor=white" height="28"/>                                                                                                              | 안정적인 lockfile과 워크스페이스 지원으로 의존성 일관성 보장                                                                               |
+| Deploy      | <img src="https://img.shields.io/badge/Vercel-000000.svg?style=for-the-badge&logo=vercel&logoColor=white" height="28"/>                                                                                                          | Next.js와 최적 통합. PR별 Preview URL 자동 생성으로 머지 전 실환경 검증 가능                                                               |
 
-- **2026년 5월 16일 토요일**까지 1차 필수 구현 사항이 적용된 중간 결과물을 제출해주세요.
+## 📁 디렉토리 구조
 
----
+Next.js **App Router** 기반의 페이지 구성을 따릅니다.
 
-### **1차 필수 구현 사항**
+```
+src/
+├── app/                        # Next.js App Router (라우트·레이아웃·메타데이터)
+│   ├── actions/                # Server Actions (쿠키 삭제 등)
+│   ├── login/                  # 로그인 페이지
+│   ├── signup/                 # 회원가입 페이지
+│   ├── vote/                   # 투표 홈
+│   │   ├── [part]/             # 파트장 투표 (FE/BE)
+│   │   │   └── ranking/        # 파트장 투표 결과
+│   │   └── demoday/            # 데모데이 투표
+│   │       └── ranking/        # 데모데이 투표 결과
+│   ├── members/                # CEOS 멤버 목록
+│   ├── contributors/           # Ditda 팀원 목록
+│   └── layout.tsx / globals.css / not-found.tsx
+├── components/                 # 재사용 가능한 순수 UI 컴포넌트
+├── constants/                  # 라우트·폼 스키마·투표 카테고리 등 상수
+├── lib/
+│   ├── apis/                   # API 호출 함수 (auth, vote, candidate, team)
+│   └── utils/                  # 유틸 함수 (cn, cookie, auth, error, sort)
+├── types/                      # 전역 TypeScript 타입 정의
+├── assets/                     # SVG 아이콘·그래픽
+└── proxy.ts                    # Next.js Middleware 기반 인증 라우트 가드
+```
 
-1. **프로젝트 세팅**
-   - Next.js의 특성을 고려하여 효과적인 폴더 구조를 고민해 봅니다.
-   - API 통신, 스타일링, 전역 상태 관리 및 기타 라이브러리 등을 팀원과 상의하여 세팅합니다.
-   - **Github organization을 사용합니다.**
-2. **퍼블리싱**
-   - 프로젝트에 필요한 모든 화면을 퍼블리싱합니다.
-   - 다양한 디바이스에서 최적의 사용자 경험을 제공하기 위해 반응형 디자인을 적용합니다.
-3. **로그인 기능**
-   - 사용자는 아이디와 비밀번호를 입력하여 로그인할 수 있습니다.
-   - 로그인 시 JWT를 통해 인증을 처리합니다.
-   - 아이디 또는 비밀번호가 틀렸을 경우, 에러 메시지를 표시합니다.
-   - 로그아웃 기능을 구현합니다.
-   - **백에서 서버 배포가 안 되었을 경우**에는 다음 주로 넘겨도 괜찮습니다.
+## ⚡ 핵심 설계 포인트
 
-### **2차 필수 구현 사항**
+**인증 & 토큰 관리**
 
-1. **투표 기능**
-   - 로그인한 사용자는 투표에 참여할 수 있습니다.
-   - 각 후보에 대한 투표 수를 실시간으로 확인할 수 있습니다.
-   - 사용자는 한 번만 투표할 수 있으며, 중복 투표를 방지합니다.
-2. **후보 목록 조회**
-   - 모든 사용자는 후보자의 목록과 상세 정보를 확인할 수 있습니다.
-   - 후보자의 이름, 사진, 소개 등을 표시합니다.
-3. **투표 결과 조회**
-   - 투표 종료 후, 모든 사용자는 최종 투표 결과를 확인할 수 있습니다.
-   - 각 후보자의 득표 수와 득표율을 시각적으로 표현합니다.
-4. **에러 처리**
-   - 서버 오류, 네트워크 문제 등 다양한 에러 상황에 대한 처리를 구현합니다.
-   - 사용자에게 이해하기 쉬운 에러 메시지를 제공합니다.
+- **Access Token 인메모리 저장** — `setAccessToken` / `getAccessToken`으로 메모리에서만 관리해 XSS 탈취 위험 최소화
+- **자동 토큰 갱신** — ky `afterResponse` 훅에서 401 응답 시 Refresh Token으로 자동 재발급 후 원래 요청 재시도. 재발급 실패 또는 기타 401 오류 시 쿠키 삭제 후 로그인 페이지로 리다이렉트
+- **미들웨어 라우트 가드** — `proxy.ts`에서 쿠키 기반으로 `/vote`, `/members` 접근을 서버 사이드에서 차단
 
----
+**API 통신**
 
-### **디자인 참고**
+- `ky` 기반 HTTP 클라이언트로 인터셉터·타임아웃을 일관되게 처리
+- `beforeRequest` 훅에서 인메모리 Access Token → 쿠키 Access Token 순으로 폴백하여 Authorization 헤더 자동 주입
 
-다음의 리소스를 참고해 UI/UX를 개선해보세요:
+**성능 최적화**
 
-- [디자인 레퍼런스1](https://www.figma.com/design/7xoPYTjMHcwPk2yl92Eynx/%ED%98%91%EB%8F%99%EA%B3%BC%EC%A0%9C-%EB%A0%88%ED%8D%BC%EB%9F%B0%EC%8A%A4?node-id=0-1&node-type=canvas)
-- [디자인 레퍼런스2](https://www.figma.com/design/XpKkyWcguIFY9QzWWJHOyL/%ED%98%91%EB%8F%99%EA%B3%BC%EC%A0%9C-%EB%A0%88%ED%8D%BC%EB%9F%B0%EC%8A%A4?node-id=0-1)
-- [디자인 레퍼런스3](https://www.figma.com/design/12WK4MEhjwNmt89HkRu8Gp/%EB%B0%94%EB%A6%AC%EB%B0%94%EB%A6%AC-%ED%88%AC%ED%91%9C)
-- [디자인 레퍼런스4](https://www.figma.com/design/qsTGeBRrKWiWE04eVOTFQ9/CEOS-CupfeeDeal-Vote?node-id=38-503&p=f&t=sM5p1Gw4hA5G5H5D-0)
+- **React Compiler** 활성화 — 컴파일 타임 자동 메모이제이션으로 `useMemo`·`useCallback` 수동 작성 부담 제거
+- **SVG 최적화** — 아이콘은 SVGR로 React 컴포넌트화해 `currentColor` 동적 색상 적용 및 트리쉐이킹, Turbopack 로더 규칙으로 처리
 
-이전 기수 과제
+**코드 품질**
 
-- [CupfeeDeal](https://github.com/CEOS-Developers/next-vote-20th/pull/6)
-- [하니홈](https://github.com/CEOS-Developers/next-vote-21th/pull/5)
-- [모앤디](https://github.com/CEOS-Developers/next-vote-22nd/pull/8)
-- [스토릭스](https://github.com/CEOS-Developers/next-vote-22nd/pull/11)
+- **Husky + lint-staged** — 커밋 시 변경 파일에만 ESLint·Prettier를 적용해 빠른 피드백 유지
+- **Prettier + prettier-plugin-tailwindcss** — Tailwind 클래스 자동 정렬로 코드 리뷰 노이즈 제거
+- **simple-import-sort** — import 순서 자동 정렬
 
-### **선택 사항**
+## ☁️ CI/CD
 
-- API 요청 방식은 자유롭게 선택 가능 (예: Fetch API, axios 등).
-- 최신 자바스크립트 스타일에 익숙해지기 위해 `Promise.then()` 대신 `async/await`를 사용해 보세요.
-- 페이지 접근 권한 관리와 로그인 상태 검증을 **proxy.ts**(구 middleware.ts)를 활용해 서버 단(Proxy)에서 미리 처리해 보세요! (참고자료: [Next.js proxy](https://nextjs.org/docs/app/getting-started/proxy))
+> **PR 생성 → Vercel Preview 자동 배포 → PR 코멘트로 URL 공유**
+> **Push to `master` → 개인 GitHub 레포에 코드 자동 미러링**
+
+| 워크플로      | 트리거          | 주요 작업                                                         |
+| ------------- | --------------- | ----------------------------------------------------------------- |
+| `preview.yml` | PR → `master`   | Vercel Preview 빌드·배포 → PR 코멘트에 URL 자동 게시              |
+| `deploy.yml`  | Push → `master` | `build.sh`로 output 생성 후 `waldls/next-vote-23rd` 레포에 미러링 |
+
+- **환경 변수**: Vercel 프로젝트 환경 변수로 관리 — 레포에 평문 미탑재
+
+## 💻 로컬 실행
+
+요구사항: **Node.js 22**, **yarn**
+
+```bash
+# 1. 의존성 설치
+yarn install
+
+# 2. 환경 변수 설정
+cp .env.example .env.local
+# .env.local에 아래 값 입력
+
+# 3. 개발 서버 실행
+yarn dev
+# → http://localhost:3000
+```
+
+### 주요 명령어
+
+```bash
+yarn lint        # ESLint 자동 수정
+yarn prettier    # Prettier 자동 정렬
+yarn build       # 프로덕션 빌드
+```
+
+### 환경 변수
+
+| 변수                  | 설명                |
+| --------------------- | ------------------- |
+| `NEXT_PUBLIC_API_URL` | 백엔드 API 서버 URL |
+
+## 👥 팀원
+
+### Team.Ditda
+
+| <img src="https://github.com/waldls.png" width="200" height="200"/> | <img src="https://github.com/KOJ50.png" width="200" height="200"/> | <img src="https://github.com/fervovita.png" width="200" height="200"/> | <img src="https://github.com/Jong0128.png" width="200" height="200"/> |
+| :-----------------------------------------------------------------: | :----------------------------------------------------------------: | :--------------------------------------------------------------------: | :-------------------------------------------------------------------: |
+|          박유민 <br/> [@waldls](https://github.com/waldls)          |          권오진 <br/> [@KOJ50](https://github.com/KOJ50)           |        안준석 <br/> [@fervovita](https://github.com/fervovita)         |         임종훈 <br/> [@Jong0128](https://github.com/Jong0128)         |
+|                          **Frontend Lead**                          |                            **Frontend**                            |                            **Backend Lead**                            |                              **Backend**                              |
+
